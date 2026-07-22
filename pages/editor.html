@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Canvas Editor | PixelForge AI Editor</title>
+
+  <!-- Bootstrap 5.3 CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
+  <!-- Google MediaPipe AI Subject Segmentation -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
+
+  <!-- Custom Project Stylesheets -->
+  <link rel="stylesheet" href="../assets/css/variables.css"/>
+  <link rel="stylesheet" href="../assets/css/reset.css"/>
+  <link rel="stylesheet" href="../assets/css/typography.css"/>
+  <link rel="stylesheet" href="../assets/css/utilities.css"/>
+  <link rel="stylesheet" href="../assets/css/layout.css"/>
+  <link rel="stylesheet" href="../assets/css/components.css"/>
+  <link rel="stylesheet" href="../assets/css/pages.css"/>
+  <link rel="stylesheet" href="../assets/css/responsive.css"/>
+</head>
+<body class="bg-background text-on-surface">
+
+  <!-- Top Navigation Bar -->
+  <header class="top-navbar" role="banner">
+    <div class="d-flex align-items-center gap-4">
+      <button class="btn-icon d-md-none" data-toggle="sidebar" aria-label="Toggle Navigation Sidebar">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <a href="../index.html" class="font-headline-md text-primary-color font-bold text-decoration-none">PixelForge AI</a>
+      <nav class="d-none d-md-flex align-items-center gap-3" aria-label="Main Navigation">
+        <a href="../index.html" class="font-body-md text-on-surface-variant-color hover-lift py-1 px-2 rounded-lg text-decoration-none">Dashboard</a>
+        <a href="./editor.html" class="font-body-md text-primary-color border-bottom border-2 border-primary py-1 px-2 text-decoration-none">Editor</a>
+        <a href="./library.html" class="font-body-md text-on-surface-variant-color hover-lift py-1 px-2 rounded-lg text-decoration-none">Library</a>
+      </nav>
+    </div>
+    
+    <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-1 text-on-surface-variant-color">
+        <button class="btn-icon" id="editor-undo" title="Undo (Ctrl+Z)" aria-label="Undo action">
+          <span class="material-symbols-outlined">undo</span>
+        </button>
+        <button class="btn-icon" id="editor-redo" title="Redo (Ctrl+Y)" aria-label="Redo action">
+          <span class="material-symbols-outlined">redo</span>
+        </button>
+
+        <div class="vr mx-1 opacity-25"></div>
+        <button class="btn-icon" id="editor-zoom-in" title="Zoom In" aria-label="Zoom In">
+          <span class="material-symbols-outlined">zoom_in</span>
+        </button>
+        <button class="btn-icon" id="editor-zoom-out" title="Zoom Out" aria-label="Zoom Out">
+          <span class="material-symbols-outlined">zoom_out</span>
+        </button>
+      </div>
+      
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn-pixelforge-variant d-inline-flex align-items-center gap-1" id="editor-open-file-btn" title="Open Image File">
+          <span class="material-symbols-outlined font-size-sm">upload_file</span> Open
+        </button>
+        <input type="file" id="editor-file-input" accept="image/*" class="d-none" />
+        <button class="btn-pixelforge-variant d-none d-sm-inline-flex align-items-center gap-2" data-modal-target="ai-assistant-modal">
+          <span class="material-symbols-outlined font-size-sm">auto_awesome</span>
+          AI Prompt Edit
+        </button>
+        <button class="btn btn-sm d-inline-flex align-items-center gap-1 text-light" id="btn-save-to-gallery" style="background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 0.5rem; padding: 0.45rem 1rem; font-weight: 600; transition: all 0.2s ease;">
+          <span class="material-symbols-outlined font-size-sm">save</span> Save to Gallery
+        </button>
+        <button class="btn-pixelforge-primary" data-modal-target="export-modal">Export</button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Side Navigation Bar -->
+  <aside class="side-navbar" aria-label="Sidebar Navigation">
+    <div class="px-3 mb-4">
+      <div class="glass-panel p-3 rounded-3 d-flex align-items-center gap-3">
+        <div class="rounded-2 d-flex align-items-center justify-content-center text-on-primary-container" style="width: 40px; height: 40px; background-color: var(--color-primary-container);">
+          <span class="material-symbols-outlined filled">tune</span>
+        </div>
+        <div class="overflow-hidden">
+          <p class="font-label-md text-on-surface-color font-bold text-truncate mb-0">Active Project</p>
+          <p id="active-project-name" class="font-label-md text-on-surface-variant-color text-truncate mb-0">Neo_Genesis_Concept</p>
+        </div>
+
+      </div>
+    </div>
+    
+    <nav class="flex-grow-1 px-2 space-y-1 overflow-y-auto">
+      <a href="../index.html" class="d-flex align-items-center gap-3 px-3 py-2 font-label-md text-on-surface-variant-color hover-lift rounded text-decoration-none">
+        <span class="material-symbols-outlined">dashboard</span>
+        Dashboard
+      </a>
+      <a href="./library.html" class="d-flex align-items-center gap-3 px-3 py-2 font-label-md text-on-surface-variant-color hover-lift rounded text-decoration-none">
+        <span class="material-symbols-outlined">photo_library</span>
+        Library
+      </a>
+      <a href="./editor.html" class="d-flex align-items-center gap-3 px-3 py-2 font-label-md text-primary-color bg-primary-container/10 border-end border-2 border-primary rounded-start active text-decoration-none">
+        <span class="material-symbols-outlined">tune</span>
+        Editor
+      </a>
+      <a href="./billing.html" class="d-flex align-items-center gap-3 px-3 py-2 font-label-md text-on-surface-variant-color hover-lift rounded text-decoration-none">
+        <span class="material-symbols-outlined">account_balance_wallet</span>
+        Billing
+      </a>
+      <a href="./settings.html" class="d-flex align-items-center gap-3 px-3 py-2 font-label-md text-on-surface-variant-color hover-lift rounded text-decoration-none">
+        <span class="material-symbols-outlined">settings</span>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Canvas Workspace -->
+  <main class="main-workspace canvas-bg position-relative p-0" style="min-height: calc(100vh - var(--topbar-height)); overflow: hidden;" role="main">
+    <div class="container-fluid h-100 p-0">
+      <div class="row g-0 h-100">
+        
+        <!-- Canvas Left Toolbar -->
+        <div class="col-auto glass-panel border-0 border-end border-secondary/20 d-flex flex-column align-items-center py-3 px-2 gap-2" style="width: 60px; z-index: 10;">
+          <button class="btn-icon" title="Remove Background (remove.bg)" data-editor-tool="bg-remove" id="btn-toolbar-bg-remove">
+            <span class="material-symbols-outlined">layers_clear</span>
+          </button>
+          <button class="btn-icon" title="Select / Move" data-editor-tool="select">
+            <span class="material-symbols-outlined">near_me</span>
+          </button>
+          <button class="btn-icon" title="Crop & Rotate" data-editor-tool="crop">
+            <span class="material-symbols-outlined">crop</span>
+          </button>
+          <button class="btn-icon" title="Color & Filters" data-editor-tool="filters">
+            <span class="material-symbols-outlined">palette</span>
+          </button>
+          <button class="btn-icon" title="AI Inpainting & Brush" data-editor-tool="inpaint">
+            <span class="material-symbols-outlined">auto_fix_high</span>
+          </button>
+          <button class="btn-icon" title="Content Remove (brush to erase)" data-editor-tool="content-remove">
+            <span class="material-symbols-outlined">healing</span>
+          </button>
+          <button class="btn-icon" title="Text Overlay" data-editor-tool="text">
+            <span class="material-symbols-outlined">title</span>
+          </button>
+          <hr class="w-100 my-1 opacity-25"/>
+          <button class="btn-icon" id="editor-reset-all" title="Reset All Adjustments">
+            <span class="material-symbols-outlined">restart_alt</span>
+          </button>
+        </div>
+
+        <!-- Center Interactive Preview Canvas -->
+        <div class="col d-flex align-items-center justify-content-center position-relative bg-dark p-4" style="min-height: calc(100vh - 110px); touch-action: none;">
+          <div id="canvas-wrapper" class="position-relative overflow-hidden rounded-3 shadow-lg border border-secondary/30 d-inline-flex align-items-center justify-content-center" style="max-width: 90%; max-height: calc(85vh - 70px); transition: transform 0.15s ease; display: none !important;">
+            <img id="editor-image-preview" src="" alt="Canvas Work Area" class="d-block user-select-none" style="max-width: 100%; max-height: calc(85vh - 70px); width: auto; height: auto; object-fit: contain; transition: filter 0.15s ease, transform 0.2s ease;" draggable="false" />
+            <canvas id="canvas-draw-layer" class="position-absolute top-0 start-0 w-100 h-100 pe-none" style="z-index: 5;"></canvas>
+
+            <div id="canvas-text-layer" class="position-absolute top-0 start-0 w-100 h-100 pe-none" style="z-index: 6;"></div>
+            <div id="canvas-crop-overlay" class="position-absolute border border-2 border-primary d-none pe-none" style="z-index: 8; background: rgba(108, 99, 255, 0.15);">
+              <div class="crop-handle top-left"></div>
+              <div class="crop-handle top-right"></div>
+              <div class="crop-handle bottom-left"></div>
+              <div class="crop-handle bottom-right"></div>
+            </div>
+          </div>
+
+          <!-- Empty Canvas State UI -->
+          <div id="empty-canvas-container" class="text-center p-5 rounded-3 glass-panel border border-secondary/30" style="max-width: 500px;">
+            <span class="material-symbols-outlined text-primary-color mb-3" style="font-size: 64px;">photo_library</span>
+            <h3 class="font-title-lg text-on-surface-color mb-2">No Image Loaded</h3>
+            <p class="font-body-md text-on-surface-variant-color mb-4">
+              Select an image from the Asset Library or upload one from your computer to start editing.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+              <a href="./library.html" class="btn btn-primary d-flex align-items-center gap-2 text-decoration-none">
+                <span class="material-symbols-outlined">browse_gallery</span>
+                Asset Library
+              </a>
+              <button class="btn btn-outline-secondary d-flex align-items-center gap-2" onclick="document.getElementById('editor-file-input').click()">
+                <span class="material-symbols-outlined">upload</span>
+                Upload Image
+              </button>
+            </div>
+          </div>
+
+
+          <!-- Bottom Floating Controls Overlay -->
+          <div class="position-absolute bottom-0 mb-4 glass-panel px-4 py-2 rounded-full d-flex align-items-center gap-3">
+            <span class="font-mono-sm text-on-surface-variant-color" id="zoom-level-text">Zoom: 100%</span>
+            <div class="vr opacity-25" style="height: 16px;"></div>
+            <span id="canvas-dimensions-text" class="font-mono-sm text-on-surface-variant-color">3840 x 2160 px (RGB / 8-bit)</span>
+          </div>
+        </div>
+
+        <!-- Right Side Adjustment Inspector Panel -->
+        <div id="properties-sidebar" class="col-12 col-md-3 glass-panel border-0 border-start border-secondary/20 p-3 overflow-y-auto" style="max-height: calc(100vh - var(--topbar-height));">
+          
+          <!-- Tool Panel: Select / Move -->
+          <div data-tool-panel="select">
+            <h3 class="font-title-md text-on-surface-color mb-3 d-flex align-items-center gap-2">
+              <span class="material-symbols-outlined text-primary-color">near_me</span>
+              Select & Move
+            </h3>
+            <p class="font-body-md text-on-surface-variant-color mb-3">
+              Use touchpad pinch or mouse wheel to zoom. Drag to pan canvas. Click elements on canvas to select.
+            </p>
+            <button class="btn btn-sm btn-outline-secondary w-100 mb-3" id="btn-recenter-canvas">
+              <span class="material-symbols-outlined font-size-sm">center_focus_strong</span> Recenter View
+            </button>
+          </div>
+
+          <!-- Tool Panel: Crop & Rotate -->
+          <div data-tool-panel="crop" class="d-none">
+            <h3 class="font-title-md text-on-surface-color mb-3 d-flex align-items-center gap-2">
+              <span class="material-symbols-outlined text-primary-color">crop</span>
+              Crop & Rotate
+            </h3>
+            <p class="font-body-md text-on-surface-variant-color mb-3">
+              Click and drag mouse directly across canvas to select custom crop area.
+            </p>
+            <div class="d-grid gap-2 mb-3">
+              <button class="btn btn-sm btn-pixelforge-primary" id="btn-apply-crop-selection">
+                <span class="material-symbols-outlined font-size-sm">crop</span> Apply Selection Crop
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" id="btn-reset-crop-selection">Reset Selection Box</button>
+            </div>
+
+
+
+            <div class="mb-3">
+              <label class="font-label-md text-on-surface-variant-color text-uppercase tracking-wider mb-2 d-block">Rotation</label>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-secondary flex-fill" id="btn-rotate-ccw" title="Rotate 90° Left">
+                  <span class="material-symbols-outlined">rotate_left</span>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary flex-fill" id="btn-rotate-cw" title="Rotate 90° Right">
+                  <span class="material-symbols-outlined">rotate_right</span>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary flex-fill" id="btn-flip-h" title="Flip Horizontal">
+                  <span class="material-symbols-outlined">flip</span>
+                </button>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="font-label-md text-on-surface-variant-color text-uppercase tracking-wider mb-2 d-block">Preset Aspect Ratios</label>
+              <div class="d-grid gap-2">
+                <button class="btn btn-sm btn-outline-secondary text-start" data-crop-ratio="original">Original Aspect Ratio</button>
+                <button class="btn btn-sm btn-outline-secondary text-start" data-crop-ratio="1:1">1:1 Square</button>
+                <button class="btn btn-sm btn-outline-secondary text-start" data-crop-ratio="16:9">16:9 Landscape</button>
+                <button class="btn btn-sm btn-outline-secondary text-start" data-crop-ratio="9:16">9:16 Story</button>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Tool Panel: Filters & Adjustments -->
+          <div data-tool-panel="filters">
+            <h3 class="font-title-md text-on-surface-color mb-3 d-flex align-items-center gap-2">
+              <span class="material-symbols-outlined text-primary-color">palette</span>
+              Color & Filters
+            </h3>
+
+            <!-- Filter Presets Section -->
+            <div class="mb-4">
+              <label class="font-label-md text-on-surface-variant-color text-uppercase tracking-wider mb-2 d-block">Filter Categories</label>
+              <select id="filter-category-select" class="form-select bg-dark border-secondary text-light mb-3 font-label-md">
+                <option value="all">All Categories</option>
+                <option value="classic">Classic & Adjust</option>
+                <option value="cinematic">Cinematic</option>
+                <option value="vintage">Vintage & Retro</option>
+                <option value="bw">Black & White</option>
+                <option value="aesthetic">Aesthetic & Artistic</option>
+                <option value="duotone">DuoTone</option>
+              </select>
+
+              <label class="font-label-md text-on-surface-variant-color text-uppercase tracking-wider mb-2 d-block">Presets</label>
+              <div class="row g-1 overflow-y-auto" id="filter-presets-grid" style="max-height: 250px; scrollbar-width: thin; padding-right: 4px;">
+                <!-- Dynamically generated filter cards with image previews will be injected here -->
+              </div>
+            </div>
+
+            <!-- Slider Adjustments Section -->
+            <div class="space-y-3 mb-4">
+              <label class="font-label-md text-on-surface-variant-color text-uppercase tracking-wider d-block">Adjustments</label>
+              
+              <div class="mb-3">
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                  <span>Brightness</span>
+                  <span id="val-brightness">100%</span>
+                </div>
+                <input type="range" class="form-range" id="slider-brightness" min="0" max="200" value="100"/>
+              </div>
+
+              <div class="mb-3">
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                  <span>Contrast</span>
+                  <span id="val-contrast">100%</span>
+                </div>
+                <input type="range" class="form-range" id="slider-contrast" min="0" max="200" value="100"/>
+              </div>
+
+              <div class="mb-3">
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                  <span>Saturate</span>
+                  <span id="val-saturate">100%</span>
+                </div>
+                <input type="range" class="form-range" id="slider-saturate" min="0" max="200" value="100"/>
+              </div>
+
+              <div class="mb-3">
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                  <span>Blur</span>
+                  <span id="val-blur">0px</span>
+                </div>
+                <input type="range" class="form-range" id="slider-blur" min="0" max="20" value="0"/>
+              </div>
+
+              <div class="mb-3">
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                  <span>Hue Rotate</span>
+                  <span id="val-hue">0°</span>
+                </div>
+                <input type="range" class="form-range" id="slider-hue" min="0" max="360" value="0"/>
+              </div>
+
+              <button class="btn btn-sm btn-outline-secondary w-100" id="editor-reset-filters">
+                <span class="material-symbols-outlined font-size-sm">restart_alt</span> Reset Filters
+              </button>
+            </div>
+          </div>
+
+          <!-- Tool Panel: AI Inpainting -->
+          <div data-tool-panel="inpaint" class="d-none">
+            <h3 class="font-title-md text-on-surface-color mb-3 d-flex align-items-center gap-2">
+              <span class="material-symbols-outlined text-primary-color">auto_fix_high</span>
+              AI Magic Erase Brush
+            </h3>
+            <p class="font-body-md text-on-surface-variant-color mb-3">
+              Paint over any unwanted object or person to magically remove them with AI.
+            </p>
+            <div class="mb-3">
+              <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                <span>Brush Radius</span>
+                <span id="val-brush-size">20px</span>
+              </div>
+              <input type="range" class="form-range" id="slider-brush-size" min="5" max="100" value="20"/>
+            </div>
+            <div class="d-grid gap-2 mb-3">
+              <button class="btn btn-sm btn-pixelforge-primary" id="btn-apply-inpaint">
+                <span class="material-symbols-outlined font-size-sm">auto_fix_high</span> Erase Masked Object
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" id="btn-clear-mask">Clear Mask</button>
+            </div>
+          </div>
+
+          <!-- Tool Panel: Content Remove -->
+          <div data-tool-panel="content-remove" class="d-none">
+            <h3 class="font-title-md text-on-surface-color mb-3 d-flex align-items-center gap-2">
+              <span class="material-symbols-outlined text-primary-color">healing</span>
+              Content Remove
+            </h3>
+            <p class="font-body-md text-on-surface-variant-color mb-3">
+              Paint over any unwanted content to remove it. The area will be filled with surrounding textures to blend seamlessly.
+            </p>
+            <div class="mb-3">
+              <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                <span>Brush Size</span>
+                <span id="val-cr-brush-size">20px</span>
+              </div>
+              <input type="range" class="form-range" id="slider-cr-brush-size" min="5" max="100" value="20"/>
+            </div>
+            <div class="d-grid gap-2 mb-3">
+              <button class="btn btn-sm btn-pixelforge-primary" id="btn-apply-content-remove">
+                <span class="material-symbols-outlined font-size-sm">healing</span> Remove Content
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" id="btn-clear-cr-mask">Clear Mask</button>
+            </div>
+            <div id="cr-status-msg" class="font-body-sm text-on-surface-variant-color text-center d-none"></div>
+          </div>
+
+          <!-- Tool Panel: Text Overlay -->
+          <div data-tool-panel="text" class="d-none">
+            <h3 class="font-title-md text-on-surface-color mb-3 d-flex align-items-center gap-2">
+              <span class="material-symbols-outlined text-primary-color">title</span>
+              Text Overlay
+            </h3>
+            <div class="mb-3">
+              <label class="form-label font-label-md text-on-surface-color">Text Content</label>
+              <input type="text" id="text-input-content" class="form-control bg-dark border-secondary text-light mb-2" value="PixelForge AI" placeholder="Enter text..." />
+            </div>
+            <div class="mb-3">
+              <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                <span>Font Size</span>
+                <span id="val-font-size">28px</span>
+              </div>
+              <input type="range" class="form-range" id="slider-font-size" min="12" max="72" value="28"/>
+            </div>
+            <div class="mb-3">
+              <label class="form-label font-label-md text-on-surface-color">Font Family</label>
+              <div class="input-group input-group-sm mb-2">
+                <span class="input-group-text bg-dark border-secondary text-on-surface-variant-color">
+                  <span class="material-symbols-outlined font-size-sm">search</span>
+                </span>
+                <input type="text" id="font-search-input" class="form-control bg-dark border-secondary text-light" placeholder="Search Google Fonts..." />
+              </div>
+              <select id="font-family-select" class="form-select form-select-sm bg-dark border-secondary text-light" size="5">
+                <option value="Inter" selected>Inter (Sans-Serif)</option>
+                <option value="Roboto">Roboto (Sans-Serif)</option>
+                <option value="Poppins">Poppins (Sans-Serif)</option>
+                <option value="Montserrat">Montserrat (Sans-Serif)</option>
+                <option value="Playfair Display">Playfair Display (Serif)</option>
+                <option value="Oswald">Oswald (Display)</option>
+                <option value="Dancing Script">Dancing Script (Handwriting)</option>
+                <option value="Pacifico">Pacifico (Handwriting)</option>
+                <option value="Fira Code">Fira Code (Monospace)</option>
+                <option value="Outfit">Outfit (Sans-Serif)</option>
+                <option value="Cinzel">Cinzel (Serif)</option>
+                <option value="Lobster">Lobster (Display)</option>
+                <option value="Merriweather">Merriweather (Serif)</option>
+                <option value="Caveat">Caveat (Handwriting)</option>
+                <option value="Bebas Neue">Bebas Neue (Display)</option>
+                <option value="Satisfy">Satisfy (Handwriting)</option>
+                <option value="Anton">Anton (Display)</option>
+                <option value="Great Vibes">Great Vibes (Handwriting)</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label font-label-md text-on-surface-color">Text Color</label>
+              <div class="d-flex align-items-center gap-2">
+                <input type="color" id="text-color-picker" class="form-control form-control-color bg-dark border-secondary" value="#c4c0ff" style="width: 50px;" />
+                <input type="text" id="text-color-hex" class="form-control font-mono-sm bg-dark border-secondary text-light flex-grow-1" value="#c4c0ff" placeholder="#000000" maxlength="7" />
+              </div>
+            </div>
+            <div class="mb-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="text-bg-toggle">
+                <label class="form-check-label font-body-md text-on-surface-color" for="text-bg-toggle">Add Text Background Box</label>
+              </div>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button class="btn btn-sm btn-pixelforge-primary" id="btn-add-text">Add Text Element</button>
+              <button class="btn btn-sm btn-outline-danger" id="btn-clear-all-text">Clear All Text</button>
+            </div>
+          </div>
+
+          <!-- Tool Panel: Remove Background (remove.bg) -->
+          <div data-tool-panel="bg-remove" class="d-none">
+            <h3 class="font-title-md text-on-surface-color mb-2 d-flex align-items-center gap-2">
+              <span class="material-symbols-outlined text-primary-color">layers_clear</span>
+              Remove Background
+            </h3>
+            <p class="font-body-md text-on-surface-variant-color mb-3">
+              Instantly erase image background and download a crisp PNG image with 100% transparent background.
+            </p>
+
+            <div class="d-grid gap-2 mb-4">
+              <button class="btn btn-sm btn-pixelforge-primary d-flex align-items-center justify-content-center gap-2 py-2" id="btn-do-bg-remove">
+                <span class="material-symbols-outlined font-size-sm">auto_fix_high</span> Remove Background Now
+              </button>
+              <button class="btn btn-sm btn-success d-flex align-items-center justify-content-center gap-2 py-2 d-none" id="btn-download-transparent-png">
+                <span class="material-symbols-outlined font-size-sm">download</span> Download Transparent PNG
+              </button>
+            </div>
+
+            <div class="mb-3">
+              <label class="font-label-md text-on-surface-variant-color text-uppercase tracking-wider mb-2 d-block">Background Style</label>
+              <div class="d-grid gap-2">
+                <button class="btn btn-sm btn-outline-secondary text-start bg-opt-btn active" data-bg-opt="transparent">
+                  <span class="material-symbols-outlined font-size-sm me-1">grid_on</span> Transparent Alpha (PNG)
+                </button>
+                <button class="btn btn-sm btn-outline-secondary text-start bg-opt-btn" data-bg-opt="white">
+                  <span class="material-symbols-outlined font-size-sm me-1">square</span> Solid White (#FFFFFF)
+                </button>
+                <button class="btn btn-sm btn-outline-secondary text-start bg-opt-btn" data-bg-opt="dark">
+                  <span class="material-symbols-outlined font-size-sm me-1">dark_mode</span> Dark Studio (#121218)
+                </button>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- AI Action Quick Buttons -->
+          <div class="p-3 glass-panel rounded-3 border border-primary/20 mt-4">
+            <span class="font-label-md text-primary-color font-bold d-flex align-items-center gap-1 mb-2">
+              <span class="material-symbols-outlined font-size-sm">auto_awesome</span>
+              AI Quick Actions
+            </span>
+            <div class="d-grid gap-2">
+              <button class="btn btn-sm btn-pixelforge-variant text-start" id="btn-ai-enhance">Auto-Enhance Colors</button>
+              <button class="btn btn-sm btn-pixelforge-variant text-start" id="btn-ai-bg-remove">Isolate Background</button>
+            </div>
+          </div>
+
+        </div>
+
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Global Modals -->
+  <div id="ai-assistant-modal" class="pixelforge-modal" aria-hidden="true" role="dialog">
+    <div class="pixelforge-modal-content p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="font-title-lg text-on-surface-color mb-0 d-flex align-items-center gap-2">
+          <span class="material-symbols-outlined text-primary-color">auto_awesome</span>
+          AI Creative Assistant
+        </h3>
+        <button class="btn-icon" data-modal-close aria-label="Close modal">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <p class="font-body-md text-on-surface-variant-color mb-4">
+        Describe the edit, enhancement, or object manipulation you would like AI to perform on your canvas.
+      </p>
+      <div class="mb-3">
+        <textarea class="form-control bg-dark border-secondary text-light p-3" rows="3" placeholder="e.g. Enhance lighting, remove background distractions, add cyber-neon color grade..."></textarea>
+      </div>
+      <div class="d-flex justify-content-end gap-2">
+        <button class="btn-pixelforge-variant" data-modal-close>Cancel</button>
+        <button class="btn-pixelforge-primary d-flex align-items-center gap-2" data-modal-close>
+          <span class="material-symbols-outlined font-size-sm">auto_awesome</span>
+          Generate Edit
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="export-modal" class="pixelforge-modal" aria-hidden="true" role="dialog">
+    <div class="pixelforge-modal-content p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="font-title-lg text-on-surface-color mb-0 d-flex align-items-center gap-2">
+          <span class="material-symbols-outlined text-secondary-color">download</span>
+          Export Project Asset
+        </h3>
+        <button class="btn-icon" data-modal-close aria-label="Close modal">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <p class="font-body-md text-on-surface-variant-color mb-3">Select output resolution and file format for your render.</p>
+      <div class="mb-3">
+        <label class="form-label font-label-md text-on-surface-color">Format</label>
+        <select id="export-format-select" class="form-select bg-dark border-secondary text-light mb-3">
+          <option value="png">PNG (Lossless, Transparency)</option>
+          <option value="jpg">JPG (High Quality Web)</option>
+          <option value="webp" selected>WEBP (Next-Gen Compressed)</option>
+        </select>
+        <label class="form-label font-label-md text-on-surface-color">Quality & Resolution</label>
+        <select id="export-quality-select" class="form-select bg-dark border-secondary text-light">
+          <option value="4k">4K (Ultra HD - 3840 x 2160)</option>
+          <option value="8k">8K (Master AI Upscale - 7680 x 4320)</option>
+          <option value="original" selected>Original Canvas Size</option>
+        </select>
+      </div>
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <button class="btn-pixelforge-variant" data-modal-close>Cancel</button>
+        <button id="export-download-btn" class="btn-pixelforge-primary">Download File</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ES6 Main Module -->
+  <script type="module" src="../assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+/**
+ * PixelForge AI Editor - Reusable Component Styles
+ */
+
+/* Buttons */
+.btn-pixelforge-primary {
+  background-color: var(--color-primary-accent);
+  color: #ffffff;
+  font-family: var(--font-family-sans);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-pixelforge-primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-pixelforge-primary:active {
+  transform: scale(0.96);
+}
+
+.btn-pixelforge-variant {
+  background-color: var(--color-surface-variant);
+  color: var(--color-on-surface);
+  font-family: var(--font-family-sans);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.btn-pixelforge-variant:hover {
+  background-color: var(--color-surface-bright);
+}
+
+.btn-icon {
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  color: var(--color-on-surface-variant);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.btn-icon:hover {
+  background-color: var(--color-surface-variant);
+  color: var(--color-on-surface);
+}
+
+/* Badges & Chips */
+.badge-draft {
+  background-color: rgba(196, 192, 255, 0.2);
+  color: var(--color-primary);
+  border: 1px solid rgba(196, 192, 255, 0.3);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+
+.badge-processed {
+  background-color: rgba(74, 225, 131, 0.2);
+  color: var(--color-secondary);
+  border: 1px solid rgba(74, 225, 131, 0.3);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+
+.chip-tag {
+  background-color: var(--color-surface-variant);
+  color: var(--color-on-surface-variant);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* Card Components */
+.project-card {
+  background-color: var(--color-surface-container);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(70, 69, 85, 0.3);
+  overflow: hidden;
+  transition: border-color var(--transition-normal), transform var(--transition-normal);
+}
+
+.project-card:hover {
+  border-color: rgba(108, 99, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Action Quick-Card */
+.action-card {
+  width: 100%;
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+}
+
+/* Storage Bar Component */
+.progress-bar-storage {
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-surface-container-high);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(to right, var(--color-primary-accent), var(--color-secondary));
+}
+
+/* Floating Action Button (FAB) */
+.fab-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-accent);
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1060;
+  transition: transform var(--transition-fast);
+}
+
+.fab-btn:hover {
+  transform: scale(1.1);
+}
+
+.fab-btn:active {
+  transform: scale(0.95);
+}
+
+/* Modal Dialogs */
+.pixelforge-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(10, 14, 21, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-normal), visibility var(--transition-normal);
+  padding: 1rem;
+}
+
+.pixelforge-modal.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.pixelforge-modal-content {
+  background-color: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 540px;
+  box-shadow: var(--glass-shadow);
+  overflow: hidden;
+  transform: scale(0.95);
+  transition: transform var(--transition-normal);
+}
+
+.pixelforge-modal.is-visible .pixelforge-modal-content {
+  transform: scale(1);
+}
+
+/* Interactive Crop Overlay & Handles */
+#canvas-crop-overlay {
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+}
+
+.crop-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: var(--color-primary-accent);
+  border: 1px solid #ffffff;
+  border-radius: 2px;
+}
+
+.crop-handle.top-left { top: -5px; left: -5px; }
+.crop-handle.top-right { top: -5px; right: -5px; }
+.crop-handle.bottom-left { bottom: -5px; left: -5px; }
+.crop-handle.bottom-right { bottom: -5px; right: -5px; }
+
+/* Canvas Responsive Containment */
+#canvas-wrapper {
+  max-width: 90% !important;
+  max-height: calc(85vh - 70px) !important;
+  width: fit-content;
+  height: fit-content;
+}
+
+#editor-image-preview {
+  max-width: 100% !important;
+  max-height: calc(85vh - 70px) !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
+
+
+
+

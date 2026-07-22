@@ -1,0 +1,21 @@
+/**
+ * PixelForge AI Editor - Page Specific Stylesheet
+ * Contains page-level layout overrides and view specific rules
+ */
+
+/* Placeholder for view-specific extensions */
+.page-dashboard {
+  /* Dashboard layout specifics */
+}
+
+.page-editor {
+  /* Main Canvas Editor layout specifics */
+}
+
+.page-library {
+  /* Photo Library view specifics */
+}
+
+.page-ai-studio {
+  /* AI Studio view specifics */
+}

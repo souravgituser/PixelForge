@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard | PixelForge AI Editor</title>
+
+  <!-- Bootstrap 5.3 CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
+  <!-- Custom Project Stylesheets -->
+  <link rel="stylesheet" href="./assets/css/variables.css"/>
+  <link rel="stylesheet" href="./assets/css/reset.css"/>
+  <link rel="stylesheet" href="./assets/css/typography.css"/>
+  <link rel="stylesheet" href="./assets/css/utilities.css"/>
+  <link rel="stylesheet" href="./assets/css/layout.css"/>
+  <link rel="stylesheet" href="./assets/css/components.css"/>
+  <link rel="stylesheet" href="./assets/css/pages.css"/>
+  <link rel="stylesheet" href="./assets/css/responsive.css"/>
+</head>
+<body class="bg-background text-on-surface">
+
+  <!-- Top Navigation Bar -->
+  <header class="top-navbar" role="banner">
+    <div class="d-flex align-items-center gap-4">
+      <button class="btn-icon d-md-none" data-toggle="sidebar" aria-label="Toggle Navigation Sidebar">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <span class="font-headline-md text-primary-color font-bold">PixelForge AI</span>
+      <nav class="d-none d-md-flex align-items-center gap-3" aria-label="Main Navigation">
+        <a href="./index.html" class="font-body-md text-primary-color border-bottom border-2 border-primary py-1 px-2">Dashboard</a>
+        <a href="./pages/editor.html" class="font-body-md text-on-surface-variant-color hover-lift py-1 px-2 rounded-lg">Editor</a>
+        <a href="./pages/library.html" class="font-body-md text-on-surface-variant-color hover-lift py-1 px-2 rounded-lg">Library</a>
+      </nav>
+    </div>
+    
+    <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-1 text-on-surface-variant-color">
+        <button class="btn-icon" title="Undo" aria-label="Undo action">
+          <span class="material-symbols-outlined">undo</span>
+        </button>
+        <button class="btn-icon" title="Redo" aria-label="Redo action">
+          <span class="material-symbols-outlined">redo</span>
+        </button>
+        <div class="vr mx-1 opacity-25"></div>
+        <button class="btn-icon" title="Zoom In" aria-label="Zoom In">
+          <span class="material-symbols-outlined">zoom_in</span>
+        </button>
+        <button class="btn-icon" title="Notifications" aria-label="Notifications">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+      </div>
+      
+      <button class="btn-pixelforge-variant d-none d-sm-inline-flex align-items-center gap-2" data-modal-target="ai-assistant-modal">
+        <span class="material-symbols-outlined font-size-sm">auto_awesome</span>
+        AI Assistant
+      </button>
+      <button class="btn-pixelforge-primary" data-modal-target="export-modal">Export</button>
+      
+      <div class="rounded-circle overflow-hidden border border-subtle ms-2" style="width: 32px; height: 32px;">
+        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80" alt="User Profile Avatar" class="w-100 h-100 object-fit-cover" loading="lazy" decoding="async"/>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Side Navigation Bar -->
+  <aside class="side-navbar" aria-label="Sidebar Navigation">
+    <div class="px-3 mb-4">
+      <div class="glass-panel p-3 rounded-3 d-flex align-items-center gap-3">
+        <div class="rounded-2 d-flex align-items-center justify-content-center text-on-primary-container" style="width: 40px; height: 40px; background-color: var(--color-primary-container);">
+          <span class="material-symbols-outlined filled">auto_awesome</span>
+        </div>
+        <div class="overflow-hidden">
+          <p class="font-label-md text-on-surface-color font-bold text-truncate mb-0">Current Project</p>
+          <p class="font-label-md text-on-surface-variant-color text-truncate mb-0">V01_Final_Edit</p>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="flex-grow-1 px-2 space-y-1 overflow-y-auto">
+      <a href="./index.html" class="d-flex align-items-center gap-3 px-3 py-2 font-label-md text-primary-color bg-primary-container/10 border-end border-2 border-primary rounded-start active">
+        <span class="material-symbols-outlined">dashboard</span>
+        Dashboard
+      </a>
+      <a href="./pages/library.html" class="d-flex align-items-center gap-3 px-3 py-2 font-label-md text-on-surface-variant-color hover-lift rounded">
+        <span class="material-symbols-outlined">photo_library</span>
+        Library
+      </a>
+      <a href="./pages/editor.html" class="d-flex align-items-center gap-3 px-3 py-2 font-label-md text-on-surface-variant-color hover-lift rounded">
+        <span class="material-symbols-outlined">tune</span>
+        Editor
+      </a>
+      <a href="./pages/billing.html" class="d-flex align-items-center gap-3 px-3 py-2 font-label-md text-on-surface-variant-color hover-lift rounded">
+        <span class="material-symbols-outlined">account_balance_wallet</span>
+        Billing
+      </a>
+      <a href="./pages/settings.html" class="d-flex align-items-center gap-3 px-3 py-2 font-label-md text-on-surface-variant-color hover-lift rounded">
+        <span class="material-symbols-outlined">settings</span>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content Canvas -->
+  <main class="main-workspace canvas-bg" role="main">
+    <div class="container-workspace">
+      
+      <!-- Welcome Header -->
+      <section class="mb-5 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-4">
+        <div>
+          <h1 class="font-headline-lg text-on-surface-color mb-2">Welcome Back, Alex</h1>
+          <p class="font-body-lg text-on-surface-variant-color max-w-xl mb-0">
+            Your creative workspace is ready. You've completed <span class="text-secondary-color font-bold">128 AI enhancements</span> this month—keep up the great work!
+          </p>
+        </div>
+        <div class="d-flex gap-3">
+          <div class="glass-panel p-3 rounded-4 min-w-140">
+            <span class="font-label-md text-on-surface-variant-color text-uppercase tracking-wider d-block mb-1">Edited</span>
+            <span class="font-headline-md text-on-surface-color">1,429</span>
+          </div>
+          <div class="glass-panel p-3 rounded-4 min-w-140">
+            <span class="font-label-md text-on-surface-variant-color text-uppercase tracking-wider d-block mb-1">Time Saved</span>
+            <span class="font-headline-md text-secondary-color">42.5h</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Grid Layout -->
+      <div class="row g-4">
+        
+        <!-- Left Column: Quick Actions & Storage -->
+        <div class="col-12 col-lg-3 d-flex flex-column gap-4">
+          <h2 class="font-title-lg text-on-surface-color px-1 mb-0">Quick Actions</h2>
+          
+          <div class="d-flex flex-column gap-3">
+            <a href="./pages/editor.html" class="glass-panel p-3 rounded-3 d-flex align-items-center gap-3 hover-lift text-decoration-none">
+              <div class="rounded-3 d-flex align-items-center justify-center text-primary-color" style="width: 40px; height: 40px; background-color: rgba(108, 99, 255, 0.2);">
+                <span class="material-symbols-outlined">brush</span>
+              </div>
+              <div>
+                <p class="font-label-md text-on-surface-color font-bold mb-0">Upscale Image</p>
+                <p class="font-mono-sm text-on-surface-variant-color mb-0">Up to 8k resolution</p>
+              </div>
+            </a>
+            
+            <a href="./pages/editor.html" class="glass-panel p-3 rounded-3 d-flex align-items-center gap-3 hover-lift text-decoration-none">
+              <div class="rounded-3 d-flex align-items-center justify-center text-secondary-color" style="width: 40px; height: 40px; background-color: rgba(74, 225, 131, 0.2);">
+                <span class="material-symbols-outlined">background_replace</span>
+              </div>
+              <div>
+                <p class="font-label-md text-on-surface-color font-bold mb-0">Remove BG</p>
+                <p class="font-mono-sm text-on-surface-variant-color mb-0">Instant AI masking</p>
+              </div>
+            </a>
+
+            <a href="./pages/editor.html" class="glass-panel p-3 rounded-3 d-flex align-items-center gap-3 hover-lift text-decoration-none">
+              <div class="rounded-3 d-flex align-items-center justify-center text-tertiary-color" style="width: 40px; height: 40px; background-color: rgba(255, 185, 85, 0.2);">
+                <span class="material-symbols-outlined">auto_fix_high</span>
+              </div>
+              <div>
+                <p class="font-label-md text-on-surface-color font-bold mb-0">Color Grade</p>
+                <p class="font-mono-sm text-on-surface-variant-color mb-0">Apply cinematic LUTs</p>
+              </div>
+            </a>
+          </div>
+
+          <!-- Storage Widget -->
+          <div class="glass-panel p-4 rounded-4 mt-2">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="font-label-md text-on-surface-color font-bold">Cloud Storage</span>
+              <span class="font-mono-sm text-primary-color">82% Full</span>
+            </div>
+            <div class="progress-bar-storage mb-3">
+              <div class="progress-bar-fill" style="width: 82%;"></div>
+            </div>
+            <p class="font-label-md text-on-surface-variant-color mb-4">41.2 GB of 50 GB used</p>
+            <a href="./pages/billing.html" class="btn btn-outline-primary btn-sm w-100 font-label-md text-decoration-none">Manage Assets</a>
+          </div>
+        </div>
+
+        <!-- Right Column: Recent Projects Grid -->
+        <div class="col-12 col-lg-9">
+          <div class="d-flex justify-content-between align-items-center mb-4 px-1">
+            <h2 class="font-title-lg text-on-surface-color mb-0">Recent Projects</h2>
+            <a href="./pages/library.html" class="text-primary-color font-label-md text-decoration-none hover-lift d-flex align-items-center gap-1">
+              View All Library
+              <span class="material-symbols-outlined font-size-sm">chevron_right</span>
+            </a>
+          </div>
+
+          <div class="row g-4">
+            <!-- Project Card 1 -->
+            <div class="col-12 col-md-6 col-xl-4">
+              <div class="project-card" style="cursor: pointer;" data-open-editor="true" data-title="Spring_Blossoms">
+                <div class="aspect-4-3 position-relative overflow-hidden">
+                  <img src="./assets/images/flowers.jpg" alt="Spring Blossoms" class="w-100 h-100 object-fit-cover" loading="lazy" decoding="async"/>
+                  <div class="position-absolute top-0 end-0 p-3">
+                    <span class="badge-draft">Draft</span>
+                  </div>
+                </div>
+                <div class="p-3">
+                  <h3 class="font-body-md font-bold text-on-surface-color text-truncate mb-1">Spring_Blossoms</h3>
+                  <p class="font-mono-sm text-on-surface-variant-color mb-3 d-flex align-items-center gap-1">
+                    <span class="material-symbols-outlined font-size-sm">schedule</span>
+                    Edited 2 hours ago
+                  </p>
+                  <div class="d-flex gap-2">
+                    <span class="chip-tag">Nature</span>
+                    <span class="chip-tag">RAW</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Project Card 2 -->
+            <div class="col-12 col-md-6 col-xl-4">
+              <div class="project-card" style="cursor: pointer;" data-open-editor="true" data-title="Modern_Residence">
+                <div class="aspect-4-3 position-relative overflow-hidden">
+                  <img src="./assets/images/house.jpg" alt="Modern Residence" class="w-100 h-100 object-fit-cover" loading="lazy" decoding="async"/>
+                  <div class="position-absolute top-0 end-0 p-3">
+                    <span class="badge-processed">Processed</span>
+                  </div>
+                </div>
+                <div class="p-3">
+                  <h3 class="font-body-md font-bold text-on-surface-color text-truncate mb-1">Modern_Residence</h3>
+                  <p class="font-mono-sm text-on-surface-variant-color mb-3 d-flex align-items-center gap-1">
+                    <span class="material-symbols-outlined font-size-sm">schedule</span>
+                    Edited yesterday
+                  </p>
+                  <div class="d-flex gap-2">
+                    <span class="chip-tag">Render</span>
+                    <span class="chip-tag">ArchViz</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Project Card 3 -->
+            <div class="col-12 col-md-6 col-xl-4">
+              <div class="project-card" style="cursor: pointer;" data-open-editor="true" data-title="Sunlit_Portrait">
+                <div class="aspect-4-3 position-relative overflow-hidden">
+                  <img src="./assets/images/portrait.jpg" alt="Sunlit Portrait" class="w-100 h-100 object-fit-cover" loading="lazy" decoding="async"/>
+
+                  <div class="position-absolute top-0 end-0 p-3">
+                    <span class="badge-draft">Draft</span>
+                  </div>
+                </div>
+                <div class="p-3">
+                  <h3 class="font-body-md font-bold text-on-surface-color text-truncate mb-1">Sunlit_Portrait</h3>
+                  <p class="font-mono-sm text-on-surface-variant-color mb-3 d-flex align-items-center gap-1">
+                    <span class="material-symbols-outlined font-size-sm">schedule</span>
+                    Edited 3 days ago
+                  </p>
+                  <div class="d-flex gap-2">
+                    <span class="chip-tag">Retouch</span>
+                    <span class="chip-tag">RAW</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="app-footer" role="contentinfo">
+    <span class="font-label-md text-on-surface-variant-color">© 2024 PixelForge AI Professional</span>
+    <div class="d-flex gap-4">
+      <a href="#" class="font-label-md text-on-surface-variant-color text-decoration-none">Privacy Policy</a>
+      <a href="#" class="font-label-md text-on-surface-variant-color text-decoration-none">Terms of Service</a>
+      <a href="#" class="font-label-md text-on-surface-variant-color text-decoration-none">Help Center</a>
+    </div>
+  </footer>
+
+  <!-- Floating Action Button -->
+  <a href="./pages/editor.html" class="fab-btn text-decoration-none" title="Create New Project" aria-label="Create New Project">
+    <span class="material-symbols-outlined filled font-size-lg">add</span>
+  </a>
+
+  <!-- AI Assistant Modal -->
+  <div id="ai-assistant-modal" class="pixelforge-modal" aria-hidden="true" role="dialog">
+    <div class="pixelforge-modal-content p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="font-title-lg text-on-surface-color mb-0 d-flex align-items-center gap-2">
+          <span class="material-symbols-outlined text-primary-color">auto_awesome</span>
+          AI Creative Assistant
+        </h3>
+        <button class="btn-icon" data-modal-close aria-label="Close modal">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <p class="font-body-md text-on-surface-variant-color mb-4">
+        Describe the edit, enhancement, or object manipulation you would like AI to perform on your canvas.
+      </p>
+      <div class="mb-3">
+        <textarea class="form-control bg-dark border-secondary text-light p-3" rows="3" placeholder="e.g. Enhance lighting, remove background distractions, add cyber-neon color grade..."></textarea>
+      </div>
+      <div class="d-flex justify-content-end gap-2">
+        <button class="btn-pixelforge-variant" data-modal-close>Cancel</button>
+        <button class="btn-pixelforge-primary d-flex align-items-center gap-2" data-modal-close>
+          <span class="material-symbols-outlined font-size-sm">auto_awesome</span>
+          Generate Edit
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div id="export-modal" class="pixelforge-modal" aria-hidden="true" role="dialog">
+    <div class="pixelforge-modal-content p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="font-title-lg text-on-surface-color mb-0 d-flex align-items-center gap-2">
+          <span class="material-symbols-outlined text-secondary-color">download</span>
+          Export Project Asset
+        </h3>
+        <button class="btn-icon" data-modal-close aria-label="Close modal">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <p class="font-body-md text-on-surface-variant-color mb-3">Select output resolution and file format for your render.</p>
+      <div class="mb-3">
+        <label class="form-label font-label-md text-on-surface-color">Format</label>
+        <select id="export-format-select" class="form-select bg-dark border-secondary text-light mb-3">
+          <option value="png">PNG (Lossless, Transparency)</option>
+          <option value="jpg">JPG (High Quality Web)</option>
+          <option value="webp" selected>WEBP (Next-Gen Compressed)</option>
+        </select>
+        <label class="form-label font-label-md text-on-surface-color">Quality & Resolution</label>
+        <select id="export-quality-select" class="form-select bg-dark border-secondary text-light">
+          <option value="4k">4K (Ultra HD - 3840 x 2160)</option>
+          <option value="8k">8K (Master AI Upscale - 7680 x 4320)</option>
+          <option value="original" selected>Original Canvas Size</option>
+        </select>
+      </div>
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <button class="btn-pixelforge-variant" data-modal-close>Cancel</button>
+        <button id="export-download-btn" class="btn-pixelforge-primary">Download File</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ES6 Main Module -->
+  <script type="module" src="./assets/js/app.js"></script>
+
+</body>
+</html>

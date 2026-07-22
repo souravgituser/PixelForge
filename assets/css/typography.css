@@ -1,0 +1,90 @@
+/**
+ * PixelForge AI Editor - Typography Design System
+ * Exact typographic scale matching Stitch design specification
+ */
+
+.font-display-lg {
+  font-family: var(--font-family-sans);
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 56px;
+  letter-spacing: -0.02em;
+}
+
+.font-headline-lg {
+  font-family: var(--font-family-sans);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 40px;
+  letter-spacing: -0.01em;
+}
+
+.font-headline-md {
+  font-family: var(--font-family-sans);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+}
+
+.font-title-lg {
+  font-family: var(--font-family-sans);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 28px;
+}
+
+.font-body-lg {
+  font-family: var(--font-family-sans);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.font-body-md {
+  font-family: var(--font-family-sans);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.font-label-md {
+  font-family: var(--font-family-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.01em;
+}
+
+.font-mono-sm {
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+/* Color Modifiers for Typography */
+.text-primary-color {
+  color: var(--color-primary);
+}
+
+.text-secondary-color {
+  color: var(--color-secondary);
+}
+
+.text-tertiary-color {
+  color: var(--color-tertiary);
+}
+
+.text-on-surface-color {
+  color: var(--color-on-surface);
+}
+
+.text-on-surface-variant-color {
+  color: var(--color-on-surface-variant);
+}
+
+.text-truncate-single {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
