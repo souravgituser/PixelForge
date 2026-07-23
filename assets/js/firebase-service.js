@@ -64,18 +64,42 @@ export class FirebaseService {
   }
 
   onAuthStateChanged(callback) {
-    if (!this.isReady || !this.auth) return;
+    const demoUser = sessionStorage.getItem('pixedit_demo_user');
+    if (demoUser) {
+      callback(JSON.parse(demoUser));
+      return;
+    }
+    if (!this.isReady || !this.auth) {
+      callback(null);
+      return;
+    }
     this.authModules.onAuthStateChanged(this.auth, callback);
   }
 
   async login() {
+    const triggerDemoLogin = () => {
+      const demoUser = {
+        uid: "demo-user-123",
+        displayName: "Alex Vance",
+        email: "alex.vance@gmail.com",
+        photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80"
+      };
+      sessionStorage.setItem('pixedit_google_access_token', 'mock-google-drive-access-token');
+      sessionStorage.setItem('pixedit_demo_user', JSON.stringify(demoUser));
+      window.location.reload();
+      return demoUser;
+    };
+
+    const isDemoParam = window.location.search.includes('demo=true');
+
     if (!this.isReady || !this.auth) {
-      alert("Firebase is not configured yet. Please configure assets/js/firebase-config.js first.");
-      return;
+      if (isDemoParam || confirm("Firebase configuration is missing or incomplete.\n\nWould you like to sign in using Demo Mode instead for local testing?")) {
+        return triggerDemoLogin();
+      }
+      return null;
     }
 
     const provider = new this.authModules.GoogleAuthProvider();
-    // Add Google Drive file upload permission scope
     provider.addScope('https://www.googleapis.com/auth/drive.file');
 
     try {
@@ -91,23 +115,36 @@ export class FirebaseService {
       return result.user;
     } catch (error) {
       console.error("Google Sign-In Error:", error);
+      if (isDemoParam || confirm(`Google Sign-In failed (${error.message}).\n\nWould you like to log in using Demo Mode instead for local testing?`)) {
+        return triggerDemoLogin();
+      }
       throw error;
     }
   }
 
   async logout() {
-    if (!this.isReady || !this.auth) return;
+    sessionStorage.removeItem('pixedit_demo_user');
+    sessionStorage.removeItem('pixedit_google_access_token');
+    if (!this.isReady || !this.auth) {
+      window.location.reload();
+      return;
+    }
     try {
       await this.authModules.signOut(this.auth);
-      sessionStorage.removeItem('pixedit_google_access_token');
       console.log("User successfully signed out.");
+      window.location.reload();
     } catch (error) {
       console.error("Sign-Out Error:", error);
+      window.location.reload();
       throw error;
     }
   }
 
   getCurrentUser() {
+    const demoUser = sessionStorage.getItem('pixedit_demo_user');
+    if (demoUser) {
+      return JSON.parse(demoUser);
+    }
     return this.auth ? this.auth.currentUser : null;
   }
 
