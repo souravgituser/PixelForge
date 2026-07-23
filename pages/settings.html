@@ -103,30 +103,15 @@
 
             <div class="mb-3">
               <label class="form-label font-label-md text-on-surface-color">Full Name</label>
-              <input type="text" class="form-control bg-dark border-secondary text-light" value="Alex Vance" />
+              <input type="text" id="settings-profile-name" class="form-control bg-dark border-secondary text-light" value="Guest User" readonly />
             </div>
 
             <div class="mb-3">
               <label class="form-label font-label-md text-on-surface-color">Email Address</label>
-              <input type="email" class="form-control bg-dark border-secondary text-light" value="alex.vance@pixelforge.ai" />
+              <input type="email" id="settings-profile-email" class="form-control bg-dark border-secondary text-light" value="Not signed in" readonly />
             </div>
 
-            <button class="btn-pixelforge-primary mt-2">Save Changes</button>
-          </div>
-
-          <div class="glass-panel p-4 rounded-4">
-            <h2 class="font-title-md text-on-surface-color mb-4 d-flex align-items-center gap-2">
-              <span class="material-symbols-outlined text-secondary-color">key</span>
-              API Keys & Integrations
-            </h2>
-
-            <div class="mb-3">
-              <label class="form-label font-label-md text-on-surface-color">PixelForge API Key</label>
-              <div class="input-group">
-                <input type="password" class="form-control bg-dark border-secondary text-light font-mono-sm" value="px_live_998b70034f9047aa84f7e6a678a0937d" readonly />
-                <button class="btn btn-outline-secondary">Copy</button>
-              </div>
-            </div>
+            <button class="btn-pixelforge-primary mt-2" style="opacity: 0.6;" disabled>Save Changes (Google Account Managed)</button>
           </div>
         </div>
 

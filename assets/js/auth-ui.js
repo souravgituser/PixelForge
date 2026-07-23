@@ -94,5 +94,64 @@ export class AuthUIController {
         });
       }
     }
+
+    // Sync Storage widget & Settings page profile input fields
+    this.updateStorageWidget(user);
+    this.updateSettingsProfile(user);
+  }
+
+  async updateStorageWidget(user) {
+    const widget = document.getElementById('storage-widget');
+    if (!widget) return;
+
+    if (!user) {
+      widget.style.display = 'none';
+      return;
+    }
+
+    const percentText = document.getElementById('storage-percent-text');
+    const progressFill = document.getElementById('storage-progress-fill');
+    const usageText = document.getElementById('storage-usage-text');
+
+    const token = this.firebase.getAccessToken();
+    const drive = window.PixelForgeApp?.drive;
+
+    if (!token || !drive) {
+      widget.style.display = 'none';
+      return;
+    }
+
+    try {
+      widget.style.display = 'block';
+      if (usageText) usageText.textContent = "Calculating storage usage...";
+
+      const quota = await drive.getStorageDetails(token);
+      
+      const usageGB = (quota.usage / (1024 * 1024 * 1024)).toFixed(2);
+      const limitGB = (quota.limit / (1024 * 1024 * 1024)).toFixed(0);
+      const percent = Math.min(100, Math.round((quota.usage / quota.limit) * 100));
+
+      if (percentText) percentText.textContent = `${percent}% Full`;
+      if (progressFill) progressFill.style.width = `${percent}%`;
+      if (usageText) usageText.textContent = `${usageGB} GB of ${limitGB} GB used`;
+    } catch (error) {
+      console.error("Failed to update storage widget:", error);
+      if (usageText) usageText.textContent = "Unavailable";
+    }
+  }
+
+  updateSettingsProfile(user) {
+    const settingsName = document.getElementById('settings-profile-name');
+    const settingsEmail = document.getElementById('settings-profile-email');
+
+    if (settingsName && settingsEmail) {
+      if (user) {
+        settingsName.value = user.displayName || '';
+        settingsEmail.value = user.email || '';
+      } else {
+        settingsName.value = 'Guest User';
+        settingsEmail.value = 'Not signed in';
+      }
+    }
   }
 }

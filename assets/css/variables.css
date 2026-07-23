@@ -99,3 +99,44 @@
   --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Light Theme Variables */
+html:not(.dark), html.light {
+  --color-background: #f4f6f9;
+  --color-surface: #ffffff;
+  --color-surface-dim: #f4f6f9;
+  --color-surface-bright: #ffffff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f8fafc;
+  --color-surface-container: #f1f5f9;
+  --color-surface-container-high: #e2e8f0;
+  --color-surface-container-highest: #cbd5e1;
+  --color-surface-variant: #e2e8f0;
+  --color-surface-tint: #6c63ff;
+
+  /* On Surface & Text Colors */
+  --color-on-background: #0f172a;
+  --color-on-surface: #0f172a;
+  --color-on-surface-variant: #475569;
+  --color-inverse-surface: #0f172a;
+  --color-inverse-on-surface: #f8fafc;
+
+  /* Primary Brand Colors (Contrast adjusted for Light Theme) */
+  --color-primary: #6c63ff;
+  --color-primary-accent: #4f44e2;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #e0e7ff;
+  --color-on-primary-container: #1e1b4b;
+
+  /* Outlines & Borders */
+  --color-outline: #64748b;
+  --color-outline-variant: #cbd5e1;
+  --color-border-subtle: rgba(15, 23, 42, 0.08);
+  --color-border-hover: rgba(15, 23, 42, 0.15);
+
+  /* Glassmorphism Tokens for Light Theme */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: 1px solid rgba(15, 23, 42, 0.08);
+  --glass-shadow: 0px 8px 24px rgba(15, 23, 42, 0.08);
+}
+

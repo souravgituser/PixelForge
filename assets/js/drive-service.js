@@ -66,4 +66,45 @@ export class GoogleDriveService {
       throw error;
     }
   }
+
+  /**
+   * Fetches the user's Google Drive storage quota details.
+   * @param {string} accessToken - The Google OAuth access token.
+   * @returns {Promise<Object>} Object containing limit and usage in bytes.
+   */
+  async getStorageDetails(accessToken) {
+    if (!accessToken) {
+      throw new Error("No Google OAuth access token provided.");
+    }
+
+    if (accessToken === 'mock-google-drive-access-token') {
+      // Mock storage details for Demo Mode
+      return {
+        limit: 15 * 1024 * 1024 * 1024, // 15 GB
+        usage: 3.4 * 1024 * 1024 * 1024  // 3.4 GB
+      };
+    }
+
+    try {
+      const response = await fetch('https://www.googleapis.com/drive/v3/about?fields=storageQuota', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Google Drive API error (${response.status})`);
+      }
+
+      const data = await response.json();
+      return {
+        limit: parseInt(data.storageQuota.limit || 0, 10),
+        usage: parseInt(data.storageQuota.usage || 0, 10)
+      };
+    } catch (error) {
+      console.error("Failed to fetch Google Drive storage details:", error);
+      throw error;
+    }
+  }
 }

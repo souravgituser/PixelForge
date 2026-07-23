@@ -164,15 +164,15 @@
           </div>
 
           <!-- Storage Widget -->
-          <div class="glass-panel p-4 rounded-4 mt-2">
+          <div class="glass-panel p-4 rounded-4 mt-2" id="storage-widget" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <span class="font-label-md text-on-surface-color font-bold">Cloud Storage</span>
-              <span class="font-mono-sm text-primary-color">82% Full</span>
+              <span id="storage-percent-text" class="font-mono-sm text-primary-color">0% Full</span>
             </div>
             <div class="progress-bar-storage mb-3">
-              <div class="progress-bar-fill" style="width: 82%;"></div>
+              <div id="storage-progress-fill" class="progress-bar-fill" style="width: 0%;"></div>
             </div>
-            <p class="font-label-md text-on-surface-variant-color mb-4">41.2 GB of 50 GB used</p>
+            <p id="storage-usage-text" class="font-label-md text-on-surface-variant-color mb-4">Calculating storage...</p>
             <a href="./pages/billing.html" class="btn btn-outline-primary btn-sm w-100 font-label-md text-decoration-none">Manage Assets</a>
           </div>
         </div>
