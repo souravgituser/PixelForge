@@ -113,6 +113,21 @@ export class EditorController {
       hue: 0,
       preset: 'none'
     };
+
+    // Lightroom Develop Adjustments State
+    this.developState = {
+      temp: 0,
+      tint: 0,
+      red: 0,
+      green: 0,
+      blue: 0
+    };
+    this.originalCanvas = document.createElement('canvas');
+    this.originalCtx = this.originalCanvas.getContext('2d', { willReadFrequently: true });
+    this.previewCanvas = document.createElement('canvas');
+    this.previewCtx = this.previewCanvas.getContext('2d', { willReadFrequently: true });
+    this.originalImageData = null;
+    this.renderScheduled = false;
   }
 
 
@@ -134,6 +149,7 @@ export class EditorController {
     this.bindSaveToGallery();
     this.bindContentRemove();
     this.bindPropertiesSidebar();
+    this.bindDevelopPanel();
 
     setTimeout(() => this.saveState(), 300);
 
@@ -189,9 +205,11 @@ export class EditorController {
         if (item && item.imgDataUrl) {
           this.previewImg.onload = () => {
             this.updateDimensionsText();
+            this.previewImg.onload = null;
           };
           this.previewImg.src = item.imgDataUrl;
           this.updateDimensionsText();
+          this.loadImage(item.imgDataUrl).catch(e => console.error('Failed to load image into Develop offscreen canvas:', e));
           sessionStorage.removeItem('pixedit_gallery_id');
           return;
         }
@@ -206,6 +224,7 @@ export class EditorController {
     if (resolvedSrc) {
       this.previewImg.onload = () => {
         this.updateDimensionsText();
+        this.previewImg.onload = null;
       };
       this.previewImg.onerror = () => {
         this.previewImg.onerror = null;
@@ -217,10 +236,40 @@ export class EditorController {
 
       this.previewImg.src = resolvedSrc;
       this.updateDimensionsText();
+      this.loadImage(resolvedSrc).catch(e => console.error('Failed to load image into Develop offscreen canvas:', e));
     } else {
       if (wrapper) wrapper.style.setProperty('display', 'none', 'important');
       if (emptyContainer) emptyContainer.style.setProperty('display', 'block', 'important');
     }
+  }
+
+  loadImage(src) {
+    return new Promise((resolve, reject) => {
+      if (!src || src === 'null' || src === 'undefined') {
+        resolve(null);
+        return;
+      }
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const w = img.naturalWidth || img.width || 800;
+        const h = img.naturalHeight || img.height || 600;
+        
+        this.originalCanvas.width = w;
+        this.originalCanvas.height = h;
+        this.originalCtx.drawImage(img, 0, 0);
+        this.originalImageData = this.originalCtx.getImageData(0, 0, w, h);
+        
+        this.previewCanvas.width = w;
+        this.previewCanvas.height = h;
+        
+        resolve(img);
+      };
+      img.onerror = (err) => {
+        reject(err);
+      };
+      img.src = src;
+    });
   }
 
 
@@ -292,6 +341,15 @@ export class EditorController {
     if (this.previewImg.src !== state.imgSrc) {
       this.previewImg.src = state.imgSrc;
     }
+
+    this.loadImage(state.imgSrc).then(() => {
+      this.isRestoringState = false;
+      this.updateUndoRedoUI();
+    }).catch(e => {
+      console.error("Failed to restore offscreen image:", e);
+      this.isRestoringState = false;
+      this.updateUndoRedoUI();
+    });
 
     this.applyFilters();
     this.applyTransform();
@@ -560,6 +618,7 @@ export class EditorController {
       this.saveState();
     };
     this.previewImg.src = resolvedSrc;
+    this.loadImage(resolvedSrc).catch(e => console.error('Failed to load image into Develop offscreen canvas:', e));
 
     if (title) {
       const titleEl = $('#active-project-name');
@@ -2190,5 +2249,257 @@ export class EditorController {
       toast.style.transform = 'translateX(-50%) translateY(80px)';
       toast.style.opacity = '0';
     }, 2500);
+  }
+
+  // --- Lightroom Develop Panel Adjustments ---
+
+  applyWhiteBalance(pixels, tempVal, tintVal) {
+    this.applyTemperature(pixels, tempVal);
+    this.applyTint(pixels, tintVal);
+  }
+
+  applyTemperature(pixels, tempVal) {
+    if (tempVal === 0) return;
+    const value = tempVal * 0.8;
+    const absVal = Math.abs(value);
+    for (let i = 0; i < pixels.length; i += 4) {
+      let r = pixels[i];
+      let g = pixels[i + 1];
+      let b = pixels[i + 2];
+
+      if (value > 0) {
+        r += value;
+        g += value * 0.4;
+        b -= value;
+      } else {
+        r -= absVal;
+        g -= absVal * 0.2;
+        b += absVal;
+      }
+
+      pixels[i] = r < 0 ? 0 : (r > 255 ? 255 : r);
+      pixels[i + 1] = g < 0 ? 0 : (g > 255 ? 255 : g);
+      pixels[i + 2] = b < 0 ? 0 : (b > 255 ? 255 : b);
+    }
+  }
+
+  applyTint(pixels, tintVal) {
+    if (tintVal === 0) return;
+    const value = tintVal * 0.8;
+    const absVal = Math.abs(value);
+    for (let i = 0; i < pixels.length; i += 4) {
+      let r = pixels[i];
+      let g = pixels[i + 1];
+      let b = pixels[i + 2];
+
+      if (value > 0) {
+        r += value;
+        g -= value;
+        b += value;
+      } else {
+        r -= absVal * 0.5;
+        g += absVal;
+        b -= absVal * 0.5;
+      }
+
+      pixels[i] = r < 0 ? 0 : (r > 255 ? 255 : r);
+      pixels[i + 1] = g < 0 ? 0 : (g > 255 ? 255 : g);
+      pixels[i + 2] = b < 0 ? 0 : (b > 255 ? 255 : b);
+    }
+  }
+
+  applyRGBBalance(pixels, rVal, gVal, bVal) {
+    if (rVal === 0 && gVal === 0 && bVal === 0) return;
+    const adjustR = rVal * 2.55;
+    const adjustG = gVal * 2.55;
+    const adjustB = bVal * 2.55;
+    for (let i = 0; i < pixels.length; i += 4) {
+      let r = pixels[i] + adjustR;
+      let g = pixels[i + 1] + adjustG;
+      let b = pixels[i + 2] + adjustB;
+
+      pixels[i] = r < 0 ? 0 : (r > 255 ? 255 : r);
+      pixels[i + 1] = g < 0 ? 0 : (g > 255 ? 255 : g);
+      pixels[i + 2] = b < 0 ? 0 : (b > 255 ? 255 : b);
+    }
+  }
+
+  renderImage() {
+    if (this.renderScheduled) return;
+    this.renderScheduled = true;
+
+    requestAnimationFrame(() => {
+      this.renderScheduled = false;
+      if (!this.originalImageData) return;
+
+      const w = this.originalCanvas.width;
+      const h = this.originalCanvas.height;
+      const imageData = this.originalCtx.getImageData(0, 0, w, h);
+      
+      this.applyWhiteBalance(imageData.data, this.developState.temp, this.developState.tint);
+      this.applyRGBBalance(imageData.data, this.developState.red, this.developState.green, this.developState.blue);
+
+      this.previewCtx.putImageData(imageData, 0, 0);
+      this.previewImg.src = this.previewCanvas.toDataURL('image/png');
+    });
+  }
+
+  bindDevelopPanel() {
+    const sliderTemp = $('#slider-temp');
+    const sliderTint = $('#slider-tint');
+    const sliderRed = $('#slider-red');
+    const sliderGreen = $('#slider-green');
+    const sliderBlue = $('#slider-blue');
+
+    const valTemp = $('#val-temp');
+    const valTint = $('#val-tint');
+    const valRed = $('#val-red');
+    const valGreen = $('#val-green');
+    const valBlue = $('#val-blue');
+
+    const updateLabel = (el, val, name) => {
+      if (!el) return;
+      const prefix = val > 0 ? '+' : '';
+      el.textContent = `${prefix}${val}`;
+    };
+
+    const bindSlider = (slider, valEl, name, stateProp) => {
+      if (!slider) return;
+      on(slider, 'input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        this.developState[stateProp] = val;
+        updateLabel(valEl, val, name);
+        this.renderImage();
+      });
+    };
+
+    bindSlider(sliderTemp, valTemp, 'Temperature', 'temp');
+    bindSlider(sliderTint, valTint, 'Tint', 'tint');
+    bindSlider(sliderRed, valRed, 'Red', 'red');
+    bindSlider(sliderGreen, valGreen, 'Green', 'green');
+    bindSlider(sliderBlue, valBlue, 'Blue', 'blue');
+
+    const resetWbBtn = $('#btn-reset-wb');
+    if (resetWbBtn) {
+      on(resetWbBtn, 'click', () => this.resetWhiteBalance());
+    }
+
+    const resetRgbBtn = $('#btn-reset-rgb');
+    if (resetRgbBtn) {
+      on(resetRgbBtn, 'click', () => this.resetRGB());
+    }
+
+    const resetAllBtn = $('#btn-reset-develop-all');
+    if (resetAllBtn) {
+      on(resetAllBtn, 'click', () => this.resetAllDevelop());
+    }
+
+    const applyBtn = $('#btn-apply-develop');
+    if (applyBtn) {
+      on(applyBtn, 'click', () => this.applyDevelop());
+    }
+
+    const downloadBtn = $('#btn-download-develop');
+    if (downloadBtn) {
+      on(downloadBtn, 'click', () => {
+        this.downloadImage('png');
+      });
+    }
+
+    // Initialize labels
+    updateLabel(valTemp, 0, 'Temperature');
+    updateLabel(valTint, 0, 'Tint');
+    updateLabel(valRed, 0, 'Red');
+    updateLabel(valGreen, 0, 'Green');
+    updateLabel(valBlue, 0, 'Blue');
+  }
+
+  updateSliderUI() {
+    const sliderTemp = $('#slider-temp');
+    const sliderTint = $('#slider-tint');
+    const sliderRed = $('#slider-red');
+    const sliderGreen = $('#slider-green');
+    const sliderBlue = $('#slider-blue');
+
+    if (sliderTemp) sliderTemp.value = this.developState.temp;
+    if (sliderTint) sliderTint.value = this.developState.tint;
+    if (sliderRed) sliderRed.value = this.developState.red;
+    if (sliderGreen) sliderGreen.value = this.developState.green;
+    if (sliderBlue) sliderBlue.value = this.developState.blue;
+
+    const valTemp = $('#val-temp');
+    const valTint = $('#val-tint');
+    const valRed = $('#val-red');
+    const valGreen = $('#val-green');
+    const valBlue = $('#val-blue');
+
+    const updateLabel = (el, val, name) => {
+      if (!el) return;
+      const prefix = val > 0 ? '+' : '';
+      el.textContent = `${prefix}${val}`;
+    };
+
+    updateLabel(valTemp, this.developState.temp, 'Temperature');
+    updateLabel(valTint, this.developState.tint, 'Tint');
+    updateLabel(valRed, this.developState.red, 'Red');
+    updateLabel(valGreen, this.developState.green, 'Green');
+    updateLabel(valBlue, this.developState.blue, 'Blue');
+  }
+
+  resetWhiteBalance() {
+    this.developState.temp = 0;
+    this.developState.tint = 0;
+    this.updateSliderUI();
+    this.renderImage();
+  }
+
+  resetRGB() {
+    this.developState.red = 0;
+    this.developState.green = 0;
+    this.developState.blue = 0;
+    this.updateSliderUI();
+    this.renderImage();
+  }
+
+  resetAllDevelop() {
+    this.developState = { temp: 0, tint: 0, red: 0, green: 0, blue: 0 };
+    this.updateSliderUI();
+    this.renderImage();
+  }
+
+  applyDevelop() {
+    if (!this.previewImg) return;
+    const dataUrl = this.previewCanvas.toDataURL('image/png');
+    this.previewImg.src = dataUrl;
+    
+    this.loadImage(dataUrl).then(() => {
+      this.developState = { temp: 0, tint: 0, red: 0, green: 0, blue: 0 };
+      this.updateSliderUI();
+      this.saveState();
+      this.showSaveToast('Adjustments Applied!');
+    });
+  }
+
+  downloadImage(format = 'png') {
+    const mimeTypes = {
+      png: 'image/png',
+      jpg: 'image/jpeg',
+      webp: 'image/webp'
+    };
+    const mime = mimeTypes[format] || 'image/png';
+    
+    this.previewCanvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const titleEl = $('#active-project-name');
+      const title = titleEl ? titleEl.textContent.trim().replace(/\s+/g, '_') : 'pixedit_develop';
+      a.href = url;
+      a.download = `${title}_edited.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, mime, 0.95);
   }
 }

@@ -260,6 +260,84 @@
   color: var(--color-primary);
 }
 
+/* Lightroom Sliders Track Gradients */
+#slider-temp::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #3b82f6, #3a3b4c 50%, #eab308) !important;
+  height: 6px;
+  border-radius: 3px;
+}
+#slider-temp::-moz-range-track {
+  background: linear-gradient(to right, #3b82f6, #3a3b4c 50%, #eab308) !important;
+  height: 6px;
+  border-radius: 3px;
+}
+
+#slider-tint::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #22c55e, #3a3b4c 50%, #ec4899) !important;
+  height: 6px;
+  border-radius: 3px;
+}
+#slider-tint::-moz-range-track {
+  background: linear-gradient(to right, #22c55e, #3a3b4c 50%, #ec4899) !important;
+  height: 6px;
+  border-radius: 3px;
+}
+
+#slider-red::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #06b6d4, #3a3b4c 50%, #ef4444) !important;
+  height: 6px;
+  border-radius: 3px;
+}
+#slider-red::-moz-range-track {
+  background: linear-gradient(to right, #06b6d4, #3a3b4c 50%, #ef4444) !important;
+  height: 6px;
+  border-radius: 3px;
+}
+
+#slider-green::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #ec4899, #3a3b4c 50%, #22c55e) !important;
+  height: 6px;
+  border-radius: 3px;
+}
+#slider-green::-moz-range-track {
+  background: linear-gradient(to right, #ec4899, #3a3b4c 50%, #22c55e) !important;
+  height: 6px;
+  border-radius: 3px;
+}
+
+#slider-blue::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #eab308, #3a3b4c 50%, #3b82f6) !important;
+  height: 6px;
+  border-radius: 3px;
+}
+#slider-blue::-moz-range-track {
+  background: linear-gradient(to right, #eab308, #3a3b4c 50%, #3b82f6) !important;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.form-range::-webkit-slider-thumb {
+  background: #ffffff !important;
+  border: 1px solid #1e293b;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-top: -4px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.form-range::-moz-range-thumb {
+  background: #ffffff !important;
+  border: 1px solid #1e293b;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+
 
 
 

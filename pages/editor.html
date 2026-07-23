@@ -140,6 +140,9 @@
           <button class="btn-icon" title="Color & Filters" data-editor-tool="filters">
             <span class="material-symbols-outlined">palette</span>
           </button>
+          <button class="btn-icon" title="Lightroom Develop" data-editor-tool="develop">
+            <span class="material-symbols-outlined">sliders</span>
+          </button>
           <button class="btn-icon" title="AI Inpainting & Brush" data-editor-tool="inpaint">
             <span class="material-symbols-outlined">auto_fix_high</span>
           </button>
@@ -340,6 +343,79 @@
               <button class="btn btn-sm btn-outline-secondary w-100" id="editor-reset-filters">
                 <span class="material-symbols-outlined font-size-sm">restart_alt</span> Reset Filters
               </button>
+            </div>
+          </div>
+
+          <!-- Tool Panel: Lightroom Develop (White Balance & RGB Balance) -->
+          <div data-tool-panel="develop" class="d-none">
+            <h3 class="font-title-md text-on-surface-color mb-3 d-flex align-items-center gap-2">
+              <span class="material-symbols-outlined text-primary-color">sliders</span>
+              Lightroom Develop
+            </h3>
+
+            <!-- White Balance Card -->
+            <div class="card bg-dark/40 border-secondary/20 rounded-3 p-3 mb-3">
+              <h4 class="font-label-md text-on-surface-color text-uppercase tracking-wider mb-3">White Balance</h4>
+              
+              <div class="mb-3">
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                  <span>Temperature</span>
+                  <span id="val-temp" class="font-mono-sm text-secondary-color">0</span>
+                </div>
+                <input type="range" class="form-range" id="slider-temp" min="-100" max="100" value="0"/>
+              </div>
+
+              <div class="mb-3">
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                  <span>Tint</span>
+                  <span id="val-tint" class="font-mono-sm text-secondary-color">0</span>
+                </div>
+                <input type="range" class="form-range" id="slider-tint" min="-100" max="100" value="0"/>
+              </div>
+
+              <button class="btn btn-sm btn-outline-secondary w-100" id="btn-reset-wb">
+                <span class="material-symbols-outlined font-size-sm">restart_alt</span> Reset White Balance
+              </button>
+            </div>
+
+            <!-- Color Balance Card -->
+            <div class="card bg-dark/40 border-secondary/20 rounded-3 p-3 mb-3">
+              <h4 class="font-label-md text-on-surface-color text-uppercase tracking-wider mb-3">RGB Color Balance</h4>
+              
+              <div class="mb-3">
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                  <span>Red</span>
+                  <span id="val-red" class="font-mono-sm text-secondary-color">0</span>
+                </div>
+                <input type="range" class="form-range" id="slider-red" min="-100" max="100" value="0"/>
+              </div>
+
+              <div class="mb-3">
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                  <span>Green</span>
+                  <span id="val-green" class="font-mono-sm text-secondary-color">0</span>
+                </div>
+                <input type="range" class="form-range" id="slider-green" min="-100" max="100" value="0"/>
+              </div>
+
+              <div class="mb-3">
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                  <span>Blue</span>
+                  <span id="val-blue" class="font-mono-sm text-secondary-color">0</span>
+                </div>
+                <input type="range" class="form-range" id="slider-blue" min="-100" max="100" value="0"/>
+              </div>
+
+              <button class="btn btn-sm btn-outline-secondary w-100" id="btn-reset-rgb">
+                <span class="material-symbols-outlined font-size-sm">restart_alt</span> Reset RGB Balance
+              </button>
+            </div>
+
+            <!-- Actions Card -->
+            <div class="d-grid gap-2 mb-3">
+              <button class="btn btn-sm btn-outline-secondary" id="btn-reset-develop-all">Reset All Adjustments</button>
+              <button class="btn btn-sm btn-pixelforge-primary" id="btn-apply-develop">Apply Adjustments</button>
+              <button class="btn btn-sm btn-outline-light" id="btn-download-develop" data-modal-target="export-modal">Download File</button>
             </div>
           </div>
 
