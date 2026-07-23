@@ -157,7 +157,7 @@ export class LibraryController {
     });
   }
 
-  processStagedUploads() {
+  async processStagedUploads() {
     if (!this.stagedFiles.length) {
       if (window.PixelForgeApp && window.PixelForgeApp.modal) {
         window.PixelForgeApp.modal.closeActive();
@@ -165,43 +165,84 @@ export class LibraryController {
       return;
     }
 
-    this.stagedFiles.forEach(file => {
-      const url = URL.createObjectURL(file);
-      const cardCol = document.createElement('div');
-      cardCol.className = 'col-12 col-md-6 col-lg-4 library-item';
-      cardCol.setAttribute('data-title', file.name);
-      cardCol.setAttribute('data-tags', 'Uploaded Raw');
-
-      cardCol.innerHTML = `
-        <div class="project-card">
-          <div class="aspect-4-3 position-relative overflow-hidden">
-            <img src="${url}" alt="${file.name}" class="w-100 h-100 object-fit-cover" />
-            <div class="position-absolute top-0 end-0 p-3">
-              <span class="badge-processed">New Upload</span>
-            </div>
-          </div>
-          <div class="p-3">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <div>
-                <h3 class="font-body-md font-bold text-on-surface-color text-truncate mb-0" style="max-width: 180px;">${file.name}</h3>
-                <span class="font-mono-sm text-on-surface-variant-color">${(file.size / (1024 * 1024)).toFixed(2)} MB • Image</span>
-              </div>
-              <a href="./editor.html" class="btn-icon open-in-editor-btn" title="Open in Editor" data-img-src="${url}" data-title="${file.name}">
-                <span class="material-symbols-outlined">edit</span>
-              </a>
-            </div>
-            <div class="d-flex gap-2">
-              <span class="chip-tag">Uploaded</span>
-              <span class="chip-tag">RAW</span>
-            </div>
-          </div>
-        </div>
-      `;
-
-      if (this.grid) {
-        this.grid.prepend(cardCol);
-      }
+    const readAsDataURL = (file) => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
+
+    for (const file of this.stagedFiles) {
+      try {
+        const dataUrl = await readAsDataURL(file);
+        
+        // Save to IndexedDB gallery database
+        const savedItem = await galleryDb.save({
+          title: file.name,
+          imgDataUrl: dataUrl,
+          tags: 'Uploaded Raw',
+          width: 800,
+          height: 600
+        });
+
+        // Now, prepend to the library grid
+        const cardCol = document.createElement('div');
+        cardCol.className = 'col-12 col-md-6 col-lg-4 library-item';
+        cardCol.setAttribute('data-title', file.name);
+        cardCol.setAttribute('data-tags', 'Uploaded Raw');
+        cardCol.setAttribute('data-gallery-id', savedItem.id);
+
+        const dateStr = this.formatTimestamp(Date.now());
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+
+        cardCol.innerHTML = `
+          <div class="project-card" style="position: relative;" data-gallery-id="${savedItem.id}">
+            <div class="aspect-4-3 position-relative overflow-hidden">
+              <img src="${dataUrl}" alt="${file.name}" class="w-100 h-100 object-fit-cover" />
+              <div class="position-absolute top-0 end-0 p-3 d-flex gap-2">
+                <span class="badge-processed" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">New Upload</span>
+              </div>
+            </div>
+            <div class="p-3">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <h3 class="font-body-md font-bold text-on-surface-color text-truncate mb-0" style="max-width: 180px;">${file.name}</h3>
+                  <span class="font-mono-sm text-on-surface-variant-color">${sizeMb} MB • ${dateStr}</span>
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                  <a href="./editor.html" class="btn-icon open-in-editor-btn" title="Open in Editor" data-gallery-id="${savedItem.id}" data-title="${file.name}">
+                    <span class="material-symbols-outlined">edit</span>
+                  </a>
+                  <button class="btn-icon gallery-delete-btn" title="Delete from Gallery" data-gallery-id="${savedItem.id}" style="color: #ef4444;">
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+              </div>
+              <div class="d-flex gap-2">
+                <span class="chip-tag">Uploaded</span>
+                <span class="chip-tag">RAW</span>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Bind delete button for this new card
+        const delBtn = cardCol.querySelector('.gallery-delete-btn');
+        if (delBtn) {
+          on(delBtn, 'click', async (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            await this.deleteSavedItem(savedItem.id, delBtn);
+          });
+        }
+
+        if (this.grid) {
+          this.grid.prepend(cardCol);
+        }
+      } catch (err) {
+        console.error("Failed to process file upload:", err);
+      }
+    }
 
     // Reset staged files & close modal
     this.stagedFiles = [];
