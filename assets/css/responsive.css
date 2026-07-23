@@ -29,6 +29,45 @@
     padding-left: var(--margin-mobile);
     padding-right: var(--margin-mobile);
   }
+
+  #properties-sidebar {
+    position: fixed !important;
+    top: var(--topbar-height) !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 300px !important;
+    max-width: calc(100vw - 70px) !important;
+    height: calc(100vh - var(--topbar-height)) !important;
+    z-index: 1040 !important;
+    transform: translateX(100%);
+    transition: transform var(--transition-normal);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+    background-color: rgba(18, 18, 24, 0.95) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    flex: none !important;
+    float: none !important;
+  }
+
+  #properties-sidebar.is-open {
+    transform: translateX(0) !important;
+  }
+
+  /* Fix logo wrapping and navigation spacing on mobile */
+  .top-navbar .font-headline-md,
+  .logo-text {
+    font-size: 18px !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+  }
+
+  .top-navbar .d-flex.align-items-center.gap-4 {
+    gap: 0.5rem !important;
+  }
+
+  .top-navbar .d-flex.align-items-center.gap-3 {
+    gap: 0.5rem !important;
+  }
 }
 
 /* Tablet (768px - 991.98px) */

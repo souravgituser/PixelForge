@@ -11,6 +11,9 @@ import { DropdownController } from './dropdown.js';
 import { EditorController } from './editor.js';
 import { LibraryController } from './library.js';
 import { ExportController } from './export.js';
+import { FirebaseService } from './firebase-service.js';
+import { GoogleDriveService } from './drive-service.js';
+import { AuthUIController } from './auth-ui.js';
 
 class PixelForgeApp {
   constructor() {
@@ -21,18 +24,25 @@ class PixelForgeApp {
     this.editor = new EditorController();
     this.library = new LibraryController();
     this.export = new ExportController();
+    this.firebase = new FirebaseService();
+    this.drive = new GoogleDriveService();
+    this.authUI = new AuthUIController(this.firebase);
   }
 
-  init() {
+  async init() {
     // Initialize image fallbacks & lazy loading
     initImageFallbacks();
     initLazyLoading();
+
+    // Initialize Firebase Auth & DB first
+    await this.firebase.init();
 
     // Initialize core controllers
     this.theme.init();
     this.sidebar.init();
     this.modal.init();
     this.dropdown.init();
+    this.authUI.init();
 
     // Initialize page-specific controllers
     this.editor.init();

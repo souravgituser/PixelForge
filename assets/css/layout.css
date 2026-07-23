@@ -67,3 +67,8 @@
   align-items: center;
   padding: 1rem 2rem;
 }
+
+/* Logo Text styling to prevent wrapping */
+.logo-text {
+  white-space: nowrap !important;
+}

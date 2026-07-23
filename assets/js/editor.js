@@ -83,6 +83,10 @@ export class EditorController {
     this.openFileBtn = $('#editor-open-file-btn');
     this.fileInput = $('#editor-file-input');
     
+    this.propertiesSidebar = $('#properties-sidebar');
+    this.togglePropertiesBtn = $('#btn-toggle-properties');
+    this.closePropertiesBtn = $('#btn-close-properties');
+    
     this.currentZoom = 100;
     this.rotationAngle = 0;
     this.flipH = false;
@@ -129,6 +133,7 @@ export class EditorController {
     this.bindUndoRedo();
     this.bindSaveToGallery();
     this.bindContentRemove();
+    this.bindPropertiesSidebar();
 
     setTimeout(() => this.saveState(), 300);
 
@@ -839,6 +844,36 @@ export class EditorController {
     });
   }
 
+  bindPropertiesSidebar() {
+    if (this.togglePropertiesBtn && this.propertiesSidebar) {
+      on(this.togglePropertiesBtn, 'click', (e) => {
+        e.stopPropagation();
+        this.propertiesSidebar.classList.toggle('is-open');
+      });
+    }
+
+    if (this.closePropertiesBtn && this.propertiesSidebar) {
+      on(this.closePropertiesBtn, 'click', (e) => {
+        e.stopPropagation();
+        this.propertiesSidebar.classList.remove('is-open');
+      });
+    }
+
+    // Auto-close right sidebar on mobile when clicking outside
+    on(document, 'click', (event) => {
+      if (
+        window.innerWidth < 768 &&
+        this.propertiesSidebar &&
+        this.propertiesSidebar.classList.contains('is-open') &&
+        !this.propertiesSidebar.contains(event.target) &&
+        (!this.togglePropertiesBtn || !this.togglePropertiesBtn.contains(event.target)) &&
+        !event.target.closest('[data-editor-tool]')
+      ) {
+        this.propertiesSidebar.classList.remove('is-open');
+      }
+    });
+  }
+
   switchTool(toolName) {
     this.activeTool = toolName;
 
@@ -850,6 +885,11 @@ export class EditorController {
         panel.classList.add('d-none');
       }
     });
+
+    // Auto-slide open properties sidebar on mobile when switching tools
+    if (window.innerWidth < 768 && this.propertiesSidebar) {
+      this.propertiesSidebar.classList.add('is-open');
+    }
 
     // Toggle draw layer interaction mode
     if (this.drawLayer) {

@@ -9,6 +9,7 @@ export class ExportController {
     this.formatSelect = $('#export-format-select');
     this.qualitySelect = $('#export-quality-select');
     this.downloadBtn = $('#export-download-btn');
+    this.driveBtn = $('#export-drive-btn');
   }
 
   init() {
@@ -16,13 +17,20 @@ export class ExportController {
 
     on(this.downloadBtn, 'click', (e) => {
       e.preventDefault();
-      this.handleExport();
+      this.handleExport(false);
     });
+
+    if (this.driveBtn) {
+      on(this.driveBtn, 'click', (e) => {
+        e.preventDefault();
+        this.handleExport(true);
+      });
+    }
 
     console.log('Export Controller initialized.');
   }
 
-  handleExport() {
+  handleExport(isDriveUpload = false) {
     const format = this.formatSelect ? this.formatSelect.value : 'webp';
     const quality = this.qualitySelect ? this.qualitySelect.value : 'original';
 
@@ -151,14 +159,22 @@ export class ExportController {
           ext = 'jpg';
         }
 
-        const dataUrl = canvas.toDataURL(mimeType, 0.95);
-        this.downloadDataUrl(dataUrl, ext);
+        if (isDriveUpload) {
+          this.uploadToDrive(canvas, ext);
+        } else {
+          const dataUrl = canvas.toDataURL(mimeType, 0.95);
+          this.downloadDataUrl(dataUrl, ext);
+          this.closeModal();
+        }
       } catch (err) {
         console.warn('Canvas export tainted by cross-origin resource. Falling back to blob download.', err);
-        this.fallbackBlobDownload(srcUrl, format);
+        if (isDriveUpload) {
+          this.uploadFallbackToDrive(srcUrl, format);
+        } else {
+          this.fallbackBlobDownload(srcUrl, format);
+          this.closeModal();
+        }
       }
-
-      this.closeModal();
     };
 
     tempImg.onerror = () => {
@@ -206,6 +222,88 @@ export class ExportController {
   closeModal() {
     if (window.PixelForgeApp && window.PixelForgeApp.modal) {
       window.PixelForgeApp.modal.closeActive();
+    }
+  }
+
+  async uploadToDrive(canvas, ext) {
+    const firebase = window.PixelForgeApp?.firebase;
+    const drive = window.PixelForgeApp?.drive;
+
+    if (!firebase || !firebase.getCurrentUser()) {
+      alert("Please sign in with Google first using the button in the header.");
+      return;
+    }
+
+    const token = firebase.getAccessToken();
+    if (!token) {
+      alert("Active Google Sign-In session not found. Please log out and sign in again.");
+      return;
+    }
+
+    const originalText = this.driveBtn.innerHTML;
+    try {
+      this.driveBtn.disabled = true;
+      this.driveBtn.innerHTML = `
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="width: 12px; height: 12px; margin-right: 4px; border-width: 2px;"></span>
+        Uploading...
+      `;
+
+      let mimeType = 'image/webp';
+      if (ext === 'png') mimeType = 'image/png';
+      else if (ext === 'jpg') mimeType = 'image/jpeg';
+
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, mimeType, 0.95));
+      const fileName = `PixelForge_Edit_${Date.now()}.${ext}`;
+
+      await drive.uploadFile(blob, fileName, token);
+      alert(`Success! File "${fileName}" has been saved to your Google Drive.`);
+      this.closeModal();
+    } catch (error) {
+      console.error("Drive upload failed:", error);
+      alert(`Failed to save to Google Drive: ${error.message}`);
+    } finally {
+      this.driveBtn.disabled = false;
+      this.driveBtn.innerHTML = originalText;
+    }
+  }
+
+  async uploadFallbackToDrive(srcUrl, format) {
+    const firebase = window.PixelForgeApp?.firebase;
+    const drive = window.PixelForgeApp?.drive;
+
+    if (!firebase || !firebase.getCurrentUser()) {
+      alert("Please sign in with Google first.");
+      return;
+    }
+
+    const token = firebase.getAccessToken();
+    if (!token) {
+      alert("Active Google session not found. Please re-authenticate.");
+      return;
+    }
+
+    const originalText = this.driveBtn.innerHTML;
+    try {
+      this.driveBtn.disabled = true;
+      this.driveBtn.innerHTML = `
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="width: 12px; height: 12px; margin-right: 4px; border-width: 2px;"></span>
+        Uploading...
+      `;
+
+      const res = await fetch(srcUrl);
+      const blob = await res.blob();
+      const ext = format === 'png' ? 'png' : (format === 'jpg' ? 'jpg' : 'webp');
+      const fileName = `PixelForge_Edit_${Date.now()}.${ext}`;
+
+      await drive.uploadFile(blob, fileName, token);
+      alert(`Success! File "${fileName}" has been saved to your Google Drive.`);
+      this.closeModal();
+    } catch (error) {
+      console.error("Drive fallback upload failed:", error);
+      alert(`Failed to save to Google Drive: ${error.message}`);
+    } finally {
+      this.driveBtn.disabled = false;
+      this.driveBtn.innerHTML = originalText;
     }
   }
 }

@@ -215,7 +215,6 @@
 .crop-handle.bottom-left { bottom: -5px; left: -5px; }
 .crop-handle.bottom-right { bottom: -5px; right: -5px; }
 
-/* Canvas Responsive Containment */
 #canvas-wrapper {
   max-width: 90% !important;
   max-height: calc(85vh - 70px) !important;
@@ -229,6 +228,36 @@
   width: auto !important;
   height: auto !important;
   object-fit: contain !important;
+}
+
+/* Custom Dropdown Menus */
+.dropdown-menu-custom {
+  display: none !important;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: none;
+  z-index: 1100;
+}
+
+.dropdown-menu-custom.is-open {
+  display: block !important;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.dropdown-item {
+  color: var(--color-on-surface);
+  text-decoration: none;
+  font-size: 13px;
+  transition: background-color var(--transition-fast);
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: var(--color-surface-variant);
+  color: var(--color-primary);
 }
 
 

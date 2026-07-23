@@ -17,10 +17,10 @@
   <link rel="stylesheet" href="../assets/css/reset.css"/>
   <link rel="stylesheet" href="../assets/css/typography.css"/>
   <link rel="stylesheet" href="../assets/css/utilities.css"/>
-  <link rel="stylesheet" href="../assets/css/layout.css"/>
-  <link rel="stylesheet" href="../assets/css/components.css"/>
-  <link rel="stylesheet" href="../assets/css/pages.css"/>
-  <link rel="stylesheet" href="../assets/css/responsive.css"/>
+  <link rel="stylesheet" href="../assets/css/layout.css?v=1.1"/>
+  <link rel="stylesheet" href="../assets/css/components.css?v=1.1"/>
+  <link rel="stylesheet" href="../assets/css/pages.css?v=1.1"/>
+  <link rel="stylesheet" href="../assets/css/responsive.css?v=1.1"/>
 </head>
 <body class="bg-background text-on-surface">
 
@@ -30,7 +30,7 @@
       <button class="btn-icon d-md-none" data-toggle="sidebar" aria-label="Toggle Navigation Sidebar">
         <span class="material-symbols-outlined">menu</span>
       </button>
-      <a href="../index.html" class="font-headline-md text-primary-color font-bold text-decoration-none">PixelForge AI</a>
+      <a href="../index.html" class="logo-text font-headline-md text-primary-color font-bold text-decoration-none">PixelForge AI</a>
       <nav class="d-none d-md-flex align-items-center gap-3" aria-label="Main Navigation">
         <a href="../index.html" class="font-body-md text-on-surface-variant-color hover-lift py-1 px-2 rounded-lg text-decoration-none">Dashboard</a>
         <a href="./editor.html" class="font-body-md text-primary-color border-bottom border-2 border-primary py-1 px-2 text-decoration-none">Editor</a>
@@ -54,11 +54,15 @@
         <button class="btn-icon" id="editor-zoom-out" title="Zoom Out" aria-label="Zoom Out">
           <span class="material-symbols-outlined">zoom_out</span>
         </button>
+        <div class="vr mx-1 opacity-25 d-md-none"></div>
+        <button class="btn-icon d-md-none" id="btn-toggle-properties" title="Toggle Adjustments Panel" aria-label="Toggle Adjustments Panel">
+          <span class="material-symbols-outlined">tune</span>
+        </button>
       </div>
       
       <div class="d-flex align-items-center gap-2">
         <button class="btn-pixelforge-variant d-inline-flex align-items-center gap-1" id="editor-open-file-btn" title="Open Image File">
-          <span class="material-symbols-outlined font-size-sm">upload_file</span> Open
+          <span class="material-symbols-outlined font-size-sm">upload_file</span> <span class="d-none d-md-inline">Open</span>
         </button>
         <input type="file" id="editor-file-input" accept="image/*" class="d-none" />
         <button class="btn-pixelforge-variant d-none d-sm-inline-flex align-items-center gap-2" data-modal-target="ai-assistant-modal">
@@ -66,9 +70,13 @@
           AI Prompt Edit
         </button>
         <button class="btn btn-sm d-inline-flex align-items-center gap-1 text-light" id="btn-save-to-gallery" style="background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 0.5rem; padding: 0.45rem 1rem; font-weight: 600; transition: all 0.2s ease;">
-          <span class="material-symbols-outlined font-size-sm">save</span> Save to Gallery
+          <span class="material-symbols-outlined font-size-sm">save</span> <span class="d-none d-md-inline">Save to Gallery</span>
         </button>
-        <button class="btn-pixelforge-primary" data-modal-target="export-modal">Export</button>
+        <button class="btn-pixelforge-primary d-inline-flex align-items-center gap-1" data-modal-target="export-modal">
+          <span class="d-none d-md-inline">Export</span>
+          <span class="material-symbols-outlined d-md-none font-size-sm">download</span>
+        </button>
+        <div id="auth-container" class="d-flex align-items-center ms-2"></div>
       </div>
 
     </div>
@@ -193,6 +201,14 @@
         <!-- Right Side Adjustment Inspector Panel -->
         <div id="properties-sidebar" class="col-12 col-md-3 glass-panel border-0 border-start border-secondary/20 p-3 overflow-y-auto" style="max-height: calc(100vh - var(--topbar-height));">
           
+          <!-- Mobile Close Button for Properties Sidebar -->
+          <div class="d-flex justify-content-between align-items-center d-md-none mb-3 border-bottom border-secondary/20 pb-2">
+            <span class="font-label-md text-on-surface-variant-color font-bold text-uppercase tracking-wider">Adjustments</span>
+            <button class="btn-icon" id="btn-close-properties" aria-label="Close Adjustments Panel">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
           <!-- Tool Panel: Select / Move -->
           <div data-tool-panel="select">
             <h3 class="font-title-md text-on-surface-color mb-3 d-flex align-items-center gap-2">
@@ -553,6 +569,13 @@
       </div>
       <div class="d-flex justify-content-end gap-2 mt-4">
         <button class="btn-pixelforge-variant" data-modal-close>Cancel</button>
+        <button id="export-drive-btn" class="btn-pixelforge-variant d-inline-flex align-items-center gap-1 text-light border border-secondary" style="background: rgba(66, 133, 244, 0.15);" title="Save to Google Drive">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 2px;">
+             <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z" fill="#4285F4"/>
+             <path d="M13 13v-3h-2v3H8l4 4 4-4h-3z" fill="#4285F4"/>
+          </svg>
+          Google Drive
+        </button>
         <button id="export-download-btn" class="btn-pixelforge-primary">Download File</button>
       </div>
     </div>
