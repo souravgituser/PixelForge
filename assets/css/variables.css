@@ -140,3 +140,40 @@ html:not(.dark), html.light {
   --glass-shadow: 0px 8px 24px rgba(15, 23, 42, 0.08);
 }
 
+/* Light Theme Component Overrides */
+html:not(.dark) .bg-dark, 
+html:not(.dark) .form-control.bg-dark, 
+html:not(.dark) .form-select.bg-dark {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+html:not(.dark) .text-light,
+html:not(.dark) .form-control.text-light,
+html:not(.dark) .form-select.text-light {
+  color: #0f172a !important;
+}
+
+html:not(.dark) kbd.bg-dark {
+  background-color: #e2e8f0 !important;
+  color: #6c63ff !important;
+  border: 1px solid #cbd5e1;
+}
+
+html:not(.dark) .table-dark {
+  --bs-table-bg: #f8fafc !important;
+  --bs-table-color: #0f172a !important;
+  --bs-table-border-color: rgba(15, 23, 42, 0.08) !important;
+  --bs-table-hover-bg: #f1f5f9 !important;
+  --bs-table-hover-color: #0f172a !important;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html:not(.dark) .table-dark th {
+  color: #475569 !important;
+  border-bottom: 2px solid #cbd5e1 !important;
+}
+
+
