@@ -2545,48 +2545,15 @@ export class EditorController {
   // --- Image Optimizer Tool ---
 
   bindOptimizer() {
-    const dropZone = $('#optimize-drop-zone');
-    const fileInput = $('#optimize-file-input');
     const qualitySlider = $('#opt-quality');
     const qualityVal = $('#opt-quality-val');
     const formatSelect = $('#opt-format');
     const downloadBtn = $('#btn-optimize-download');
 
-    if (!dropZone || !fileInput) return;
-
     this._optCanvas = document.createElement('canvas');
     this._optCtx = this._optCanvas.getContext('2d');
-    this._optOriginalFile = null;
     this._optBlob = null;
-
-    // Click to browse
-    on(dropZone, 'click', (e) => {
-      if (e.target === fileInput) return;
-      fileInput.value = '';
-      fileInput.click();
-    });
-
-    // File selected
-    on(fileInput, 'change', (e) => {
-      const file = e.target.files[0];
-      if (file && file.type.startsWith('image/')) {
-        this._optimizerLoadFile(file);
-      }
-    });
-
-    // Drag & drop
-    ['dragenter', 'dragover'].forEach(evt => {
-      on(dropZone, evt, (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('border-primary'); });
-    });
-    ['dragleave', 'drop'].forEach(evt => {
-      on(dropZone, evt, (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('border-primary'); });
-    });
-    on(dropZone, 'drop', (e) => {
-      const dt = e.dataTransfer;
-      if (dt && dt.files && dt.files.length > 0 && dt.files[0].type.startsWith('image/')) {
-        this._optimizerLoadFile(dt.files[0]);
-      }
-    });
+    this._optOriginalSize = 0;
 
     // Quality slider
     if (qualitySlider && qualityVal) {
@@ -2605,11 +2572,25 @@ export class EditorController {
     if (downloadBtn) {
       on(downloadBtn, 'click', () => this._optimizerDownload());
     }
+
+    // Auto-load when the optimize panel becomes visible
+    const observer = new MutationObserver(() => {
+      const panel = document.querySelector('[data-tool-panel="optimize"]');
+      if (panel && !panel.classList.contains('d-none')) {
+        this._optimizerLoadFromCanvas();
+      }
+    });
+    const panel = document.querySelector('[data-tool-panel="optimize"]');
+    if (panel) {
+      observer.observe(panel, { attributes: true, attributeFilter: ['class'] });
+    }
   }
 
-  _optimizerLoadFile(file) {
-    this._optOriginalFile = file;
+  _optimizerLoadFromCanvas() {
+    if (!this.previewImg || !this.previewImg.src) return;
+
     const img = new Image();
+    img.crossOrigin = 'anonymous';
     img.onload = () => {
       const w = img.naturalWidth;
       const h = img.naturalHeight;
@@ -2618,29 +2599,27 @@ export class EditorController {
       this._optCtx.drawImage(img, 0, 0);
 
       // Populate original stats
-      const nameEl = $('#opt-original-name');
       const dimsEl = $('#opt-original-dims');
       const sizeEl = $('#opt-original-size');
-      if (nameEl) nameEl.textContent = file.name;
       if (dimsEl) dimsEl.textContent = `${w} × ${h} px`;
-      if (sizeEl) sizeEl.textContent = this._formatBytes(file.size);
 
-      // Show output dimensions (always same)
-      const outDimsEl = $('#opt-output-dims');
-      if (outDimsEl) outDimsEl.textContent = `${w} × ${h} px`;
+      // Estimate current PNG size as the "original" baseline
+      this._optCanvas.toBlob((pngBlob) => {
+        this._optOriginalSize = pngBlob ? pngBlob.size : 0;
+        if (sizeEl) sizeEl.textContent = this._formatBytes(this._optOriginalSize);
 
-      // Show stats panel
-      const statsEl = $('#optimize-stats');
-      if (statsEl) statsEl.classList.remove('d-none');
+        // Output dimensions always match
+        const outDimsEl = $('#opt-output-dims');
+        if (outDimsEl) outDimsEl.textContent = `${w} × ${h} px`;
 
-      this._optimizerEstimate();
-      URL.revokeObjectURL(img.src);
+        this._optimizerEstimate();
+      }, 'image/png');
     };
-    img.src = URL.createObjectURL(file);
+    img.src = this.previewImg.src;
   }
 
   _optimizerEstimate() {
-    if (!this._optOriginalFile) return;
+    if (!this._optOriginalSize) return;
     const format = ($('#opt-format') || {}).value || 'image/webp';
     const quality = parseInt(($('#opt-quality') || {}).value || '82', 10) / 100;
 
@@ -2650,7 +2629,7 @@ export class EditorController {
 
       const outSizeEl = $('#opt-output-size');
       const savingsEl = $('#opt-savings');
-      const originalSize = this._optOriginalFile.size;
+      const originalSize = this._optOriginalSize;
       const newSize = blob.size;
 
       if (outSizeEl) outSizeEl.textContent = this._formatBytes(newSize);
@@ -2670,12 +2649,13 @@ export class EditorController {
   }
 
   _optimizerDownload() {
-    if (!this._optBlob || !this._optOriginalFile) return;
+    if (!this._optBlob) return;
     const format = ($('#opt-format') || {}).value || 'image/webp';
     const extMap = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png' };
     const ext = extMap[format] || 'webp';
 
-    const baseName = this._optOriginalFile.name.replace(/\.[^.]+$/, '');
+    const titleEl = $('#active-project-name');
+    const baseName = titleEl ? titleEl.textContent.trim().replace(/\s+/g, '_') : 'image';
     const url = URL.createObjectURL(this._optBlob);
     const a = document.createElement('a');
     a.href = url;
