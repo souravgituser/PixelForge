@@ -152,6 +152,9 @@
           <button class="btn-icon" title="Text Overlay" data-editor-tool="text">
             <span class="material-symbols-outlined">title</span>
           </button>
+          <button class="btn-icon" title="Image Optimizer" data-editor-tool="optimize">
+            <span class="material-symbols-outlined">compress</span>
+          </button>
           <hr class="w-100 my-1 opacity-25"/>
           <button class="btn-icon" id="editor-reset-all" title="Reset All Adjustments">
             <span class="material-symbols-outlined">restart_alt</span>
@@ -415,7 +418,85 @@
             <div class="d-grid gap-2 mb-3">
               <button class="btn btn-sm btn-outline-secondary" id="btn-reset-develop-all">Reset All Adjustments</button>
               <button class="btn btn-sm btn-pixelforge-primary" id="btn-apply-develop">Apply Adjustments</button>
-              <button class="btn btn-sm btn-outline-light" id="btn-download-develop" data-modal-target="export-modal">Download File</button>
+            </div>
+          </div>
+
+          <!-- Tool Panel: Image Optimizer -->
+          <div data-tool-panel="optimize" class="d-none">
+            <h3 class="font-title-md text-on-surface-color mb-3 d-flex align-items-center gap-2">
+              <span class="material-symbols-outlined text-primary-color">compress</span>
+              Image Optimizer
+            </h3>
+            <p class="font-body-md text-on-surface-variant-color mb-3">
+              Reduce file size while preserving full dimensions and visual quality.
+            </p>
+
+            <!-- Upload Zone -->
+            <div class="card bg-dark/40 border-secondary/20 rounded-3 p-3 mb-3">
+              <div id="optimize-drop-zone" class="border border-dashed border-secondary rounded-3 p-4 text-center" style="cursor: pointer;">
+                <span class="material-symbols-outlined text-on-surface-variant-color mb-2" style="font-size: 36px;">upload_file</span>
+                <p class="font-label-md text-on-surface-variant-color mb-1">Drop image here or click to browse</p>
+                <p class="font-mono-sm text-on-surface-variant-color mb-0">PNG, JPG, WebP supported</p>
+                <input type="file" id="optimize-file-input" accept="image/*" class="d-none" />
+              </div>
+            </div>
+
+            <!-- Stats (hidden until image loaded) -->
+            <div id="optimize-stats" class="d-none">
+              <div class="card bg-dark/40 border-secondary/20 rounded-3 p-3 mb-3">
+                <h4 class="font-label-md text-on-surface-color text-uppercase tracking-wider mb-3">Original</h4>
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                  <span>File Name</span>
+                  <span id="opt-original-name" class="font-mono-sm text-on-surface-variant-color text-truncate" style="max-width: 140px;">—</span>
+                </div>
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                  <span>Dimensions</span>
+                  <span id="opt-original-dims" class="font-mono-sm text-secondary-color">—</span>
+                </div>
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-0">
+                  <span>File Size</span>
+                  <span id="opt-original-size" class="font-mono-sm text-secondary-color">—</span>
+                </div>
+              </div>
+
+              <div class="card bg-dark/40 border-secondary/20 rounded-3 p-3 mb-3">
+                <h4 class="font-label-md text-on-surface-color text-uppercase tracking-wider mb-3">Optimized Output</h4>
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                    <span>Format</span>
+                  </div>
+                  <select id="opt-format" class="form-select bg-dark border-secondary text-light font-label-md">
+                    <option value="image/webp">WebP (Best compression)</option>
+                    <option value="image/jpeg">JPEG</option>
+                    <option value="image/png">PNG (Lossless)</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                    <span>Quality</span>
+                    <span id="opt-quality-val" class="font-mono-sm text-secondary-color">82%</span>
+                  </div>
+                  <input type="range" class="form-range" id="opt-quality" min="10" max="100" value="82" />
+                </div>
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                  <span>Dimensions</span>
+                  <span id="opt-output-dims" class="font-mono-sm text-secondary-color">—</span>
+                </div>
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-1">
+                  <span>Estimated Size</span>
+                  <span id="opt-output-size" class="font-mono-sm text-success">—</span>
+                </div>
+                <div class="d-flex justify-content-between font-label-md text-on-surface-color mb-0">
+                  <span>Savings</span>
+                  <span id="opt-savings" class="font-mono-sm text-success font-bold">—</span>
+                </div>
+              </div>
+
+              <div class="d-grid gap-2">
+                <button class="btn btn-sm btn-pixelforge-primary" id="btn-optimize-download">
+                  <span class="material-symbols-outlined font-size-sm">download</span> Download Optimized
+                </button>
+              </div>
             </div>
           </div>
 

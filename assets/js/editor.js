@@ -150,6 +150,7 @@ export class EditorController {
     this.bindContentRemove();
     this.bindPropertiesSidebar();
     this.bindDevelopPanel();
+    this.bindOptimizer();
 
     setTimeout(() => this.saveState(), 300);
 
@@ -255,6 +256,7 @@ export class EditorController {
         const w = img.naturalWidth || img.width || 800;
         const h = img.naturalHeight || img.height || 600;
         
+        // 1. Full-resolution Master Cache
         this.originalCanvas.width = w;
         this.originalCanvas.height = h;
         this.originalCtx.drawImage(img, 0, 0);
@@ -262,6 +264,27 @@ export class EditorController {
         
         this.previewCanvas.width = w;
         this.previewCanvas.height = h;
+
+        // 2. High-speed Preview Cache (Max 800px)
+        const maxPreviewDim = 800;
+        let previewW = w;
+        let previewH = h;
+        if (w > maxPreviewDim || h > maxPreviewDim) {
+          if (w > h) {
+            previewW = maxPreviewDim;
+            previewH = Math.round((h * maxPreviewDim) / w);
+          } else {
+            previewH = maxPreviewDim;
+            previewW = Math.round((w * maxPreviewDim) / h);
+          }
+        }
+        
+        this.previewScaleCanvas = document.createElement('canvas');
+        this.previewScaleCanvas.width = previewW;
+        this.previewScaleCanvas.height = previewH;
+        this.previewScaleCtx = this.previewScaleCanvas.getContext('2d', { willReadFrequently: true });
+        this.previewScaleCtx.drawImage(img, 0, 0, previewW, previewH);
+        this.previewScaleImageData = this.previewScaleCtx.getImageData(0, 0, previewW, previewH);
         
         resolve(img);
       };
@@ -2324,23 +2347,36 @@ export class EditorController {
     }
   }
 
-  renderImage() {
-    if (this.renderScheduled) return;
+  renderImage(isFullRes = false) {
+    if (this.renderScheduled && !isFullRes) return;
     this.renderScheduled = true;
 
     requestAnimationFrame(() => {
       this.renderScheduled = false;
-      if (!this.originalImageData) return;
 
-      const w = this.originalCanvas.width;
-      const h = this.originalCanvas.height;
-      const imageData = this.originalCtx.getImageData(0, 0, w, h);
-      
-      this.applyWhiteBalance(imageData.data, this.developState.temp, this.developState.tint);
-      this.applyRGBBalance(imageData.data, this.developState.red, this.developState.green, this.developState.blue);
+      if (isFullRes) {
+        if (!this.originalImageData) return;
+        const w = this.originalCanvas.width;
+        const h = this.originalCanvas.height;
+        const imageData = this.originalCtx.getImageData(0, 0, w, h);
+        
+        this.applyWhiteBalance(imageData.data, this.developState.temp, this.developState.tint);
+        this.applyRGBBalance(imageData.data, this.developState.red, this.developState.green, this.developState.blue);
 
-      this.previewCtx.putImageData(imageData, 0, 0);
-      this.previewImg.src = this.previewCanvas.toDataURL('image/png');
+        this.previewCtx.putImageData(imageData, 0, 0);
+        this.previewImg.src = this.previewCanvas.toDataURL('image/png');
+      } else {
+        if (!this.previewScaleImageData) return;
+        const w = this.previewScaleCanvas.width;
+        const h = this.previewScaleCanvas.height;
+        const imageData = this.previewScaleCtx.getImageData(0, 0, w, h);
+
+        this.applyWhiteBalance(imageData.data, this.developState.temp, this.developState.tint);
+        this.applyRGBBalance(imageData.data, this.developState.red, this.developState.green, this.developState.blue);
+
+        this.previewScaleCtx.putImageData(imageData, 0, 0);
+        this.previewImg.src = this.previewScaleCanvas.toDataURL('image/jpeg', 0.85);
+      }
     });
   }
 
@@ -2369,7 +2405,10 @@ export class EditorController {
         const val = parseInt(e.target.value, 10);
         this.developState[stateProp] = val;
         updateLabel(valEl, val, name);
-        this.renderImage();
+        this.renderImage(false); // Fast low-res preview during active dragging
+      });
+      on(slider, 'change', () => {
+        this.renderImage(true); // Full-resolution update when dragging ends
       });
     };
 
@@ -2501,5 +2540,157 @@ export class EditorController {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }, mime, 0.95);
+  }
+
+  // --- Image Optimizer Tool ---
+
+  bindOptimizer() {
+    const dropZone = $('#optimize-drop-zone');
+    const fileInput = $('#optimize-file-input');
+    const qualitySlider = $('#opt-quality');
+    const qualityVal = $('#opt-quality-val');
+    const formatSelect = $('#opt-format');
+    const downloadBtn = $('#btn-optimize-download');
+
+    if (!dropZone || !fileInput) return;
+
+    this._optCanvas = document.createElement('canvas');
+    this._optCtx = this._optCanvas.getContext('2d');
+    this._optOriginalFile = null;
+    this._optBlob = null;
+
+    // Click to browse
+    on(dropZone, 'click', (e) => {
+      if (e.target === fileInput) return;
+      fileInput.value = '';
+      fileInput.click();
+    });
+
+    // File selected
+    on(fileInput, 'change', (e) => {
+      const file = e.target.files[0];
+      if (file && file.type.startsWith('image/')) {
+        this._optimizerLoadFile(file);
+      }
+    });
+
+    // Drag & drop
+    ['dragenter', 'dragover'].forEach(evt => {
+      on(dropZone, evt, (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('border-primary'); });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+      on(dropZone, evt, (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('border-primary'); });
+    });
+    on(dropZone, 'drop', (e) => {
+      const dt = e.dataTransfer;
+      if (dt && dt.files && dt.files.length > 0 && dt.files[0].type.startsWith('image/')) {
+        this._optimizerLoadFile(dt.files[0]);
+      }
+    });
+
+    // Quality slider
+    if (qualitySlider && qualityVal) {
+      on(qualitySlider, 'input', (e) => {
+        qualityVal.textContent = `${e.target.value}%`;
+        this._optimizerEstimate();
+      });
+    }
+
+    // Format change
+    if (formatSelect) {
+      on(formatSelect, 'change', () => this._optimizerEstimate());
+    }
+
+    // Download
+    if (downloadBtn) {
+      on(downloadBtn, 'click', () => this._optimizerDownload());
+    }
+  }
+
+  _optimizerLoadFile(file) {
+    this._optOriginalFile = file;
+    const img = new Image();
+    img.onload = () => {
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+      this._optCanvas.width = w;
+      this._optCanvas.height = h;
+      this._optCtx.drawImage(img, 0, 0);
+
+      // Populate original stats
+      const nameEl = $('#opt-original-name');
+      const dimsEl = $('#opt-original-dims');
+      const sizeEl = $('#opt-original-size');
+      if (nameEl) nameEl.textContent = file.name;
+      if (dimsEl) dimsEl.textContent = `${w} × ${h} px`;
+      if (sizeEl) sizeEl.textContent = this._formatBytes(file.size);
+
+      // Show output dimensions (always same)
+      const outDimsEl = $('#opt-output-dims');
+      if (outDimsEl) outDimsEl.textContent = `${w} × ${h} px`;
+
+      // Show stats panel
+      const statsEl = $('#optimize-stats');
+      if (statsEl) statsEl.classList.remove('d-none');
+
+      this._optimizerEstimate();
+      URL.revokeObjectURL(img.src);
+    };
+    img.src = URL.createObjectURL(file);
+  }
+
+  _optimizerEstimate() {
+    if (!this._optOriginalFile) return;
+    const format = ($('#opt-format') || {}).value || 'image/webp';
+    const quality = parseInt(($('#opt-quality') || {}).value || '82', 10) / 100;
+
+    this._optCanvas.toBlob((blob) => {
+      if (!blob) return;
+      this._optBlob = blob;
+
+      const outSizeEl = $('#opt-output-size');
+      const savingsEl = $('#opt-savings');
+      const originalSize = this._optOriginalFile.size;
+      const newSize = blob.size;
+
+      if (outSizeEl) outSizeEl.textContent = this._formatBytes(newSize);
+
+      if (savingsEl) {
+        const saved = originalSize - newSize;
+        const pct = ((saved / originalSize) * 100).toFixed(1);
+        if (saved > 0) {
+          savingsEl.textContent = `-${this._formatBytes(saved)} (${pct}% smaller)`;
+          savingsEl.className = 'font-mono-sm text-success font-bold';
+        } else {
+          savingsEl.textContent = `+${this._formatBytes(Math.abs(saved))} (larger)`;
+          savingsEl.className = 'font-mono-sm text-danger font-bold';
+        }
+      }
+    }, format, quality);
+  }
+
+  _optimizerDownload() {
+    if (!this._optBlob || !this._optOriginalFile) return;
+    const format = ($('#opt-format') || {}).value || 'image/webp';
+    const extMap = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png' };
+    const ext = extMap[format] || 'webp';
+
+    const baseName = this._optOriginalFile.name.replace(/\.[^.]+$/, '');
+    const url = URL.createObjectURL(this._optBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${baseName}_optimized.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    this.showSaveToast('Optimized image downloaded!');
+  }
+
+  _formatBytes(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   }
 }
